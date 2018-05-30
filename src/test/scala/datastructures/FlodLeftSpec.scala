@@ -19,6 +19,10 @@ class FoldLeftSpec extends FlatSpec {
     List.foldLeft(as, 0)((x, y) => x + 1)
   }
 
+  def reverse[A](as: List[A]): List[A] = {
+    List.foldLeft(as,Nil:List[A])((a, b) => Cons(b, a))
+  }
+
   "implement sum method with foldLeft" should "same as real sum" in {
     val r = sum(intList)
     assert(r == 6)
@@ -32,5 +36,11 @@ class FoldLeftSpec extends FlatSpec {
   "implement length function with fold left" should "same as real length" in {
     val r = length(intList)
     assert(r == 3)
+  }
+
+  "implement reverse function with fold left" should "same as reversed result " in {
+    val intListReverse = List(3, 2, 1)
+    val r = reverse(intList)
+    assert(r == intListReverse)
   }
 }
