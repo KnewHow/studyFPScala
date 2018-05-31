@@ -24,4 +24,12 @@ object List {
       case Cons(h, t) => foldLeft(t, f(z, h))(f)
     }
   }
+
+  def reverse[A](as: List[A]) :List[A] = {
+    foldLeft(as, Nil:List[A])((b, a) => Cons(a, b))
+  }
+
+  def foldRigtViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
+    foldLeft(reverse(as), z)((b: B, a: A) => f(a, b))
+  }
 }
