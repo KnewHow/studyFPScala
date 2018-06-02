@@ -16,7 +16,7 @@ class AppendSpec extends FlatSpec {
 
   "append a list to a list" should "success" in {
     val s = List(4, 5)
-    val r = List.appendWithFoldRight(as, s)
+    val r = List.append(as, s)
     assert(r == b)
   }
 
