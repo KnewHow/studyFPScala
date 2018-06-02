@@ -32,4 +32,24 @@ object List {
   def foldRigtViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B = {
     foldLeft(reverse(as), z)((b: B, a: A) => f(a, b))
   }
+
+  def appendWithFoldRight[A](as: List[A], e: A): List[A] = {
+    foldRigt(as,Cons(e, Nil: List[A]))(Cons(_,_))
+  }
+
+  def appendWithFoldRight[A](a: List[A], b: List[A]): List[A] = {
+    foldRigt(a,b)(Cons(_,_))
+  }
+
+  def appendWithFoldRight[A](a: List[A]*): List[A] = {
+    var f = Nil:List[A]
+    for(e <- a) {
+      f = appendWithFoldRight(f,e)
+    }
+    f
+  }
+
+
+
+
 }
