@@ -87,4 +87,22 @@ object List {
     case(Cons(h1,t1), Cons(h2,t2)) => Cons(f(h1,h2), zipWith(t1,t2)(f))
   }
 
+  def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+    def isStartWith[A](sup: List[A], startPrefix: List[A]): Boolean = (sub,startPrefix) match {
+      case(Nil, Nil) => true
+      case(Cons(h1,t1), Cons(h2,t2)) => if(h1 == h2) isStartWith(t1,t2) else false
+      case _ => false
+    }
+
+    (sup) match {
+      case Nil if sub == Nil => true
+      case _ if isStartWith(sup, sub) => true
+      case Cons(h,t) => hasSubsequence(t,sub)
+    }
+
+
+
+
+  }
+
 }
