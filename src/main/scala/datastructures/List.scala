@@ -58,6 +58,13 @@ object List {
   }
 
 
+  def flatMap[A,B](as: List[A])(f: A => List[B]): List[B] = {
+    foldRigt(as, Nil:List[B])((x,y) => append(f(x),y))
+  }
+
+  def flatMap2[A,B](as: List[A])(f: A => List[B]): List[B] = {
+    connect(map(as)(f))
+  }
 
   def filter[A](as: List[A])(f: A => Boolean): List[A] = {
     as match {
@@ -68,6 +75,16 @@ object List {
 
   def filter2[A](as: List[A])(f: A => Boolean): List[A] = {
     foldRigt(as, Nil: List[A])((x,y) => if(f(x)) Cons(x,y) else y)
+  }
+
+  def filterViaFlatMap[A](as: List[A])(f: A => Boolean): List[A] = {
+    flatMap(as)(i => if(f(i)) List(i) else Nil: List[A])
+  }
+
+  def zipWith[A,B,C](a: List[A], b: List[B])(f:(A,B) => C): List[C] = (a,b) match {
+    case(Nil,_) => Nil
+    case(_,Nil) => Nil
+    case(Cons(h1,t1), Cons(h2,t2)) => Cons(f(h1,h2), zipWith(t1,t2)(f))
   }
 
 }

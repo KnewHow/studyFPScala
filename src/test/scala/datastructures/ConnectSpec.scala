@@ -14,4 +14,5 @@ class ConnectSpec extends FlatSpec {
     println(s"connect result -> $r")
     assert(r == List(1, 2, 3, 4))
   }
+
 }
