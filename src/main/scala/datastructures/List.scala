@@ -88,21 +88,25 @@ object List {
   }
 
   def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
-    def isStartWith[A](sup: List[A], startPrefix: List[A]): Boolean = (sub,startPrefix) match {
-      case(Nil, Nil) => true
-      case(Cons(h1,t1), Cons(h2,t2)) => if(h1 == h2) isStartWith(t1,t2) else false
-      case _ => false
+    def isStartWith[A](s: List[A], startPrefix: List[A]): Boolean = {
+      println(s"sub -> $sub -> prefix -> $startPrefix")
+      (s,startPrefix) match {
+        case(_, Nil) => true
+        case(Cons(h1,t1), Cons(h2,t2)) => if(h1 == h2) isStartWith(t1,t2) else false
+        case _ => false
+      }
     }
 
-    (sup) match {
+    sup match {
       case Nil if sub == Nil => true
-      case _ if isStartWith(sup, sub) => true
+      case _ if isStartWith(sup, sub) => {
+        true
+      }
       case Cons(h,t) => hasSubsequence(t,sub)
+      case _ => {
+        false
+      }
     }
-
-
-
-
   }
 
 }
