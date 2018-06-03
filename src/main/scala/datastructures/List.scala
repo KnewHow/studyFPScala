@@ -53,7 +53,21 @@ object List {
     foldRigt(as, Nil: List[A])(append)
   }
 
+  def map[A,B](as: List[A])(f: A => B): List[B] = {
+    foldRigt(as,Nil: List[B])((x,y) => Cons(f(x),y))
+  }
 
 
+
+  def filter[A](as: List[A])(f: A => Boolean): List[A] = {
+    as match {
+      case Nil => Nil
+      case Cons(x, h) => if(f(x)) Cons(x, filter(h)(f)) else filter(h)(f)
+    }
+  }
+
+  def filter2[A](as: List[A])(f: A => Boolean): List[A] = {
+    foldRigt(as, Nil: List[A])((x,y) => if(f(x)) Cons(x,y) else y)
+  }
 
 }
