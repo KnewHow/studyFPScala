@@ -27,6 +27,13 @@ object Tree {
       case (Branch(l1, r1), Branch(l2, r2)) => equal(l1, l2) && equal(r1, r2)
       case _ => false
     }
-   }
+  }
+
+  def fold[A,B](t: Tree[A])(f: A => B)(g:(B, B) => B): B ={
+    t match {
+      case Leaf(v) => f(v)
+      case Branch(l, r) => g(fold(l)(f)(g), fold(r)(f)(g))
+    }
+  }
 
 }
