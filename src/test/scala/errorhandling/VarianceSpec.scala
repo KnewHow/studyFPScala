@@ -17,4 +17,6 @@ class VarianceSpec extends FlatSpec {
       case _ => fpscala.errorhandling.Some(cal)
     }
   }
+
+  "imple"
 }
