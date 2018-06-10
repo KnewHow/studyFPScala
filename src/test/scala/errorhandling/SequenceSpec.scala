@@ -27,10 +27,11 @@ class SequenceSpec extends FlatSpec {
   "test sequence" should "success" in {
     val list = List(
       Option(1),
-      Option(2)
+      Option(2),
+      None
     )
 
-    val r = sequence(list)
+    val r = sequence_2(list)
     println(r)
     assert(true)
   }
