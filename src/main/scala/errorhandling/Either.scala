@@ -17,7 +17,8 @@ sealed trait Either[+E, +A] {
     case Left(_) => b
   }
 
-  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = for{a <- this; bb <- b} yield f(a,bb)
+  def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = for{a <- this; bb <- b} yield f(a, bb)
+
 }
 
 case class Left[+E](value: E) extends Either[E, Nothing]
