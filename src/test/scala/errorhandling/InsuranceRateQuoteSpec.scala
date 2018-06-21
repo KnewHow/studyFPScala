@@ -22,30 +22,22 @@ class InsuranceRateQuoteSpec extends FlatSpec {
   }
 
 
-  def map3[A, B, C, D](a: Option[A], b: Option[B], c: Option[C])(f:(A, B, C) => D): Option[D] = a flatMap(aa => b flatMap (bb => c map (cc => f(aa, bb, cc))))
-
-  def map3_2[A, B, C, D](a: Option[A], b: Option[B], c: Option[C])(f:(A, B, C) => D): Option[D] = {
-    for {aa <- a
-      bb <- b
-      cc <- c
-    } yield {f(aa,bb,cc)}
-  }
   def Try[A](a: => A): Option[A] = {
     try Some(a)
     catch {case e: Exception => None}
   }
 
-  def parseInsuranceRateQuote(age: String, numberOfSpeedingTickets: String): Option[Double] = {
+  def strNumberMuti_2(age: String, numberOfSpeedingTickets: String): Option[Double] = {
     val opAge = Try { age.toInt }
     val opTickets = Try { numberOfSpeedingTickets.toInt }
-    map2(opAge, opTickets)(insuranceRateQuote)
+    map2(opAge, opTickets)(_ * _)
   }
 
-  def parseInsuranceRateQuote_2(age: String, numberOfSpeedingTickets: String): Option[Double] = {
+  def strNumberMuti(s1: String, s2: String): Option[Double] = {
     for{
-      a <- Try{ age.toInt }
-      b <- Try{ numberOfSpeedingTickets.toInt }
-    } yield insuranceRateQuote(a, b)
+      a <- Try{ s1.toInt }
+      b <- Try{ s2.toInt }
+    } yield a * b
 
   }
 
@@ -59,11 +51,11 @@ class InsuranceRateQuoteSpec extends FlatSpec {
     //   println(r)
     //   assert(r == Some(m * n * 1.0))
     // }
-    val times = 100000000L
+    val times = 10000000L
     val n = 999
     val m  = 999
     for(i <- 1L to times) {
-      val re = parseInsuranceRateQuote_2(n.toString, m.toString)
+      val re = strNumberMuti(n.toString, m.toString)
       assert(re == Some(n * m * 1.0))
     }
   }
