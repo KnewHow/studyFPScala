@@ -18,7 +18,7 @@ class TakeSpec extends FlatSpec {
   }
 
   "test takeWhile function" should "success" in {
-    val r = s.takeWhile((i:Int) => i < 5 )
-    assert(r.toListFaster == List(1, 2, 3, 4))
+    val r = s.takeWhile((i:Int) => i < 3 )
+    assert(r.toListFaster == List(1, 2))
   }
 }
