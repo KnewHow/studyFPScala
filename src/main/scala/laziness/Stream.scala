@@ -37,6 +37,17 @@ sealed trait Stream[+A] {
     }
     go(this)
   }
+  def toList: List[A] = {
+    var buffer = new collection.mutable.ListBuffer[A]
+    def go(s: Stream[A]): List[A] = s match {
+      case Cons(h, t) => {
+        buffer += h()
+        go(t())
+      }
+      case _ => buffer.toList
+    }
+    go(this)
+  }
 
   def take(n: Int): Stream[A] = this match {
     case Cons(h, t) if n > 1 => Stream.cons(h(), t().take(n-1))
@@ -73,6 +84,15 @@ sealed trait Stream[+A] {
     if(f(a)) Stream.cons(a,b)
     else Stream.empty)
 
+  def headOptionFoldRight: Option[A] = this.foldRight(None:Option[A])((a,b) => Some(a))
+
+  def map[B](f: A => B): Stream[B] = this.foldRight[Stream[B]](Stream.empty[B])((a, b) => Stream.cons(f(a), b))
+
+  def append[B >: A](a: => Stream[B]) = this.foldRight[Stream[B]](a)((a, b) => Stream.cons(a, b))
+
+  def flatMap[B](f: A => Stream[B]): Stream[B] = this.foldRight[Stream[B]](Stream.empty[B])((a, b) => f(a).append(b))
+
+  def filter(f: A => Boolean): Stream[A] = this.foldRight[Stream[A]](Stream.empty)((a, b) => if(f(a)) Stream.cons(a, b) else b)
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -86,4 +106,8 @@ object Stream {
   }
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+  def constant[A](a: A): Stream[A] = cons(a, constant(a))
+
+  def from(n: Int): Stream[Int] = cons(n, from(n+1))
 }
