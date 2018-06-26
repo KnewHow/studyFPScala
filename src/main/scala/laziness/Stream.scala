@@ -116,6 +116,34 @@ sealed trait Stream[+A] {
       case (Cons(h, t), i)  if(i == 1) => Some(h(),(Stream.empty, i-1))
       case _ => None
     }
+
+  def takeWhileViaUnfold(p: A => Boolean): Stream[A] = Stream.unfold[A,Stream[A]](this){
+    case Cons(h, t) => if(p(h()))  Some(h(),t()) else None
+    case _ => None
+  }
+
+  def zipWith[B, C](s:Stream[B])(f: (A, B) => C): Stream[C] = Stream.unfold[C, (Stream[A],Stream[B])]((this, s)){
+    case (Cons(h1, t1), Cons(h2, t2)) => Some((f(h1(), h2()), (t1(), t2())))
+    case _ => None
+  }
+
+
+
+  def startWith[B >: A](s: Stream[B]): Boolean = {
+    def go(s1: Stream[A], s2: Stream[B]): Boolean = (s1, s2) match {
+      case (Cons(h1, t1),Cons(h2, t2))  => (h1() == h2()) && go(t1(),t2())
+      case(_, Empty) =>true
+      case(Empty,Cons(h,t)) =>false
+      case _ => true
+    }
+
+    (this, s) match {
+      case(Empty, Empty) => true
+      case(_, Empty) => false
+      case(Empty, _) => false
+      case _ => go(this,s)
+    }
+  }
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -138,5 +166,7 @@ object Stream {
     case Some((h, t)) => cons(h, unfold(t)(f))
     case _ => empty
   }
+
+
 
 }

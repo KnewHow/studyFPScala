@@ -24,5 +24,18 @@ class UnfoldSpec2 extends StreamBaseSpec{
     assert(r.toList == List(1, 2))
   }
 
+  "implement takeWhile function with unfold function" should "success" in {
+    val r = s.takeWhileViaUnfold(i => i < 4)
+    assert(r.toList == List(1,2,3))
+  }
+
+  "implent zipWith function with unfold function" should "success" in {
+    val s1 = Stream(1,2,3)
+    val s2 = Stream(4,5,6)
+    val r = s1.zipWith(s2)(_ + _)
+    assert(r.toList == List(5,7,9))
+
+  }
+
 
 }
