@@ -37,5 +37,19 @@ class UnfoldSpec2 extends StreamBaseSpec{
 
   }
 
+  "implement zipAll function with unfold function" should "success" in {
+    val s1 = Stream(1,2,3,4)
+    val s2 =  Stream(4,5,6)
+
+    val r = s1.zipAll(s2)
+    assert(r.toList == List(
+      (Some(1), Some(4)),
+      (Some(2), Some(5)),
+      (Some(3), Some(6)),
+      (Some(4), None)
+    ))
+    assert(true)
+  }
+
 
 }
