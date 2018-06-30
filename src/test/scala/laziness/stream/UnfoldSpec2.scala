@@ -4,6 +4,9 @@ import org.scalatest._
 import fpscala.laziness._
 
 class UnfoldSpec2 extends StreamBaseSpec{
+  val s1 = Stream(1,2,3,4)
+  val s2 =  Stream(4,5,6)
+
   "implement map function with unfold myself" should "success" in {
     val r = s.mapViaUnFold(i => i.toString)
     assert(r.toList == List("1", "2", "3", "4"))
@@ -30,16 +33,21 @@ class UnfoldSpec2 extends StreamBaseSpec{
   }
 
   "implent zipWith function with unfold function" should "success" in {
-    val s1 = Stream(1,2,3)
-    val s2 = Stream(4,5,6)
     val r = s1.zipWith(s2)(_ + _)
     assert(r.toList == List(5,7,9))
+  }
 
+  "implent zip function with zipAll" should "success" in {
+    val r = s1.zip(s2)
+    assert(r.toList == List(
+      1 -> 4,
+      2 -> 5,
+      3 -> 6
+    ))
   }
 
   "implement zipAll function with unfold function" should "success" in {
-    val s1 = Stream(1,2,3,4)
-    val s2 =  Stream(4,5,6)
+
 
     val r = s1.zipAll(s2)
     assert(r.toList == List(
@@ -50,6 +58,8 @@ class UnfoldSpec2 extends StreamBaseSpec{
     ))
     assert(true)
   }
+
+
 
 
 }

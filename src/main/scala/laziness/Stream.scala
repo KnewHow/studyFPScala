@@ -127,12 +127,16 @@ sealed trait Stream[+A] {
     case _ => None
   }
 
+  def zip[B](s: Stream[B]): Stream[(A, B)] = this.zipWith(s)((_, _))
+
   def zipAll[B](s: Stream[B]):Stream[(Option[A], Option[B])] = Stream.unfold[(Option[A], Option[B]), (Stream[A], Stream[B])]((this, s)){
     case (Cons(h1, t1), Cons(h2, t2)) => Some(((Some(h1()), Some(h2())), (t1(), t2())))
     case(Empty, Cons(h2, t2)) => Some(((None: Option[A], Some(h2())), (Empty: Stream[A], t2())))
     case(Cons(h1, t1), Empty) => Some(((Some(h1()), None), (t1(), Empty)))
     case(Empty, Empty) => None
   }
+
+
 
 
 
@@ -151,6 +155,28 @@ sealed trait Stream[+A] {
       case _ => go(this,s)
     }
   }
+
+  def startWithViaZipAll[B >: A](s: Stream[B]): Boolean = this.zipAll(s).takeWhile(_._2.nonEmpty) forAll {
+    case (h1, h2) => h1 == h2
+  }
+
+  def tails: Stream[Stream[A]] = Stream.unfold[Stream[A], Stream[A]](this){
+    case Cons(h, t) => Some(Stream.cons(h(), t()) -> t())
+    case _ => None
+  } append(Stream.empty)
+
+
+  def hasSubSequence[B >: A](s: Stream[B]):Boolean = s match{
+    case Empty => true
+    case _ => this.tails.foldRightExists (_.startWith(s))
+  }
+
+  def scanRight[B](z: B)(f: (A, =>B) => B): Stream[B] = foldRight[(B, Stream[B])](z -> Stream(z)) { (a, p0) =>
+    lazy val p1 = p0
+    val b2 = f(a, p1._1)
+    (b2, Stream.cons(b2, p1._2))
+  }._2
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

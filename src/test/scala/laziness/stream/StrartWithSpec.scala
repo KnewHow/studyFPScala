@@ -14,7 +14,11 @@ class StartWithSpec extends FlatSpec {
     assert(s1.startWith(s2))
   }
 
-  "a2" should "start with a1" in {
-    assert(a2.startWith(a2))
+  // "a2" should "start with a1" in {
+  //   assert(a2.startWithViaZipAll(a1))
+  // }
+
+  "use zipAll implement startWith" should "success" in {
+    assert(s1.startWithViaZipAll(s2))
   }
 }
