@@ -11,10 +11,50 @@ trait RNG {
   def ints(count: Int)(rng: RNG): (List[Int], RNG)
   type Rand[+A] = RNG => (A, RNG)
   def int: Rand[Int]
+  def unit[A](a: A): Rand[A]
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B]
+  def nonNegativeIntEvent: Rand[Int]
+  def doubleViaMap: Rand[Double]
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C]
+  def both[A, B](a: Rand[A], b: Rand[B]): Rand[(A, B)]
+
+  def intDoubleViaBoth: Rand[(Int, Double)]
+
+  def doubleIntViaBoth: Rand[(Double, Int)]
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]]
+
+  def intsViaSequence(count: Int): Rand[List[Int]]
 }
 
 case class SimpleRNG(val seed: Long) extends RNG {
   override def int: Rand[Int] = _.nextInt
+  override def unit[A](a: A): Rand[A] = rng => (a, rng)
+  override def map[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+  }
+
+  override def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+    rng => {
+      val (n1, r1) = ra(rng)
+      val (n2, r2) = rb(r1)
+      (f(n1, n2), r2)
+    }
+  }
+
+  override def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = fs.foldRight(unit(List[A]()))((a, b) => map2(a, b)(_ :: _))
+
+
+  override  def intsViaSequence(count: Int): Rand[List[Int]] = sequence( List.fill(count)(int))
+
+  override def both[A, B](a: Rand[A], b: Rand[B]): Rand[(A, B)] = map2(a, b)(_ -> _)
+
+  override def nonNegativeIntEvent = map(nonNegativeInt)(i => i- i % 2)
+  override def doubleViaMap: Rand[Double] = map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble))
+
   override def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
     val nextRNG = SimpleRNG(newSeed)
@@ -50,12 +90,16 @@ case class SimpleRNG(val seed: Long) extends RNG {
     val ((i, d), r)  = intDouble(rng)
     ((d, i) -> r)
   }
-  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+  override def double3(rng: RNG): ((Double, Double, Double), RNG) = {
     val (d1, r1) = double(rng)
     val (d2, r2) = double(r1)
     val (d3, r3) = double(r2)
     ((d1, d2, d3) -> r3)
   }
+
+  override def intDoubleViaBoth: Rand[(Int, Double)]  =  both(int,double)
+
+  override def doubleIntViaBoth: Rand[(Double, Int)] = both(double, int)
 
   override def ints(count: Int)(rng: RNG): (List[Int], RNG) = (count, rng) match {
     case (c, r) if c > 0 => {
