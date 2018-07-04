@@ -25,6 +25,10 @@ trait RNG {
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]]
 
   def intsViaSequence(count: Int): Rand[List[Int]]
+
+  def nonNegativeLessThan(n: Int): Rand[Int]
+
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B]
 }
 
 case class SimpleRNG(val seed: Long) extends RNG {
@@ -34,6 +38,13 @@ case class SimpleRNG(val seed: Long) extends RNG {
     rng => {
       val (a, rng2) = s(rng)
       (f(a), rng2)
+    }
+  }
+
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+    rng => {
+      val (v, r1) = f(rng)
+      g(v)(r1)
     }
   }
 
@@ -107,6 +118,23 @@ case class SimpleRNG(val seed: Long) extends RNG {
       ((v1 :: ints(c-1)(r1)._1), r1)
     }
     case _  => (List.empty -> rng)
+  }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = {
+    rng => {
+      val (v, rng2) = nonNegativeInt(rng)
+      val mod = v % n
+      if(v + (n - 1) - mod >= 0) (mod, rng2) else nonNegativeLessThan(n)(rng2)
+    }
+  }
+
+  def nonNegativeLessThanViaFlatMap(n: Int): Rand[Int] = flatMap(nonNegativeInt){ i =>
+    val mod = i % n
+    if(i + (n - 1) - mod >= 0) {
+      rng => (mod, rng)
+    } else {
+      nonNegativeLessThanViaFlatMap(n)
+    }
   }
 
 }

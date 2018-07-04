@@ -64,4 +64,26 @@ class BetterRNGSpec extends FlatSpec {
     assert(r1 == r2)
   }
 
+  "test nonNegativeLessThan function" should "success" in {
+    val n  = 10
+    val r1 = rng.nonNegativeLessThan(n)(rng)
+
+    val r2 = rng.nonNegativeLessThan(n)(r1._2)
+
+     val r3 = rng.nonNegativeLessThan(n)(r2._2)
+
+    assert(r1._1 <= 10 && r2._1 <= 10 && r3._1 <= 10)
+  }
+
+  "test nonNegativeLessThanViaFlatMap function" should "success" in {
+    val n  = 10
+    val r1 = rng.nonNegativeLessThanViaFlatMap(n)(rng)
+
+    val r2 = rng.nonNegativeLessThanViaFlatMap(n)(r1._2)
+
+    val r3 = rng.nonNegativeLessThanViaFlatMap(n)(r2._2)
+
+    assert(r1._1 <= 10 && r2._1 <= 10 && r3._1 <= 10)
+  }
+
 }
