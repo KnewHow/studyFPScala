@@ -86,4 +86,16 @@ class BetterRNGSpec extends FlatSpec {
     assert(r1._1 <= 10 && r2._1 <= 10 && r3._1 <= 10)
   }
 
+  "implement map function with flatMap" should "success" in {
+    def nonNegativeIntEvent = rng.mapViaFlatMap(rng.nonNegativeInt)(i => i- i % 2)
+
+    val r1 = nonNegativeIntEvent(rng)
+    assert(r1._1 % 2 == 0)
+  }
+
+  "implement map2 function with flatMap" should "success" in {
+    val as = List.fill(3)(rng.unit(8))
+    val r = rng.sequence2(as)(rng)
+    assert(r._1 == List(8, 8, 8))
+  }
 }

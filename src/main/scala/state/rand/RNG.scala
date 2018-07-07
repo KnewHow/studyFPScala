@@ -24,11 +24,19 @@ trait RNG {
 
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]]
 
+  def sequence2[A](fs: List[Rand[A]]): Rand[List[A]]
+
   def intsViaSequence(count: Int): Rand[List[Int]]
 
   def nonNegativeLessThan(n: Int): Rand[Int]
 
   def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B]
+
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B]
+
+  def map2ViaFlatMap[A, B, C](as: Rand[A], bs: Rand[B])(f: (A, B) => C): Rand[C]
+
+  def rollDie: Rand[Int]
 }
 
 case class SimpleRNG(val seed: Long) extends RNG {
@@ -136,5 +144,20 @@ case class SimpleRNG(val seed: Long) extends RNG {
       nonNegativeLessThanViaFlatMap(n)
     }
   }
+
+  def mapViaFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = flatMap(s) { i =>
+    rng => (f(i), rng)
+  }
+
+  def map2ViaFlatMap[A, B, C](as: Rand[A], bs: Rand[B])(f: (A, B) => C): Rand[C] = flatMap(as) { i =>
+    rng => {
+      val (v, r2) = bs(rng)
+      (f(i, v), r2)
+    }
+  }
+
+  def sequence2[A](as: List[Rand[A]]): Rand[List[A]] = as.foldRight(unit(List[A]()))((a, b) => map2(a, b)(_ :: _))
+
+    def rollDie: Rand[Int] = mapViaFlatMap(nonNegativeLessThan(6))(_ + 1)
 
 }
