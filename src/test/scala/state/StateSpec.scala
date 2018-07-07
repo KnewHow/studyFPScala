@@ -32,6 +32,13 @@ class StateSpec extends FlatSpec {
     val r = events.run(rng)._1.forall(i => i % 2 == 0)
     assert(r)
   }
+
+  "test state get function" should "success" in {
+    val s = rng.nonEvents(10)
+    val r = State.get
+    println(s"get function -> ${r}")
+    assert(true)
+  }
 }
 
 
