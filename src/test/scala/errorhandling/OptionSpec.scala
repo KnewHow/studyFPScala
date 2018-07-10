@@ -21,19 +21,24 @@ class OptionSpec extends FlatSpec {
   }
 
   "test getOrElse function" should "success" in {
-    val r = Employee.getEmployees.map(_.department).getOrElse("default department")
+    val r =
+      Employee.getEmployees.map(_.department).getOrElse("default department")
     println(r)
     assert(true)
   }
 }
 
-case class Employee(name: String, department: String, manager:Option[String]=None)
+case class Employee(name: String,
+                    department: String,
+                    manager: Option[String] = None)
 
-object Employee{
+object Employee {
   def getEmployees: Option[Employee] = {
     val r = Random.nextBoolean
     r match {
-      case true => fpscala.errorhandling.Option(Employee("how","developing",Option("yes")))
+      case true =>
+        fpscala.errorhandling.Option(
+          Employee("how", "developing", Option("yes")))
       case _ => None
     }
   }

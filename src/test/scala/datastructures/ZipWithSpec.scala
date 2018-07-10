@@ -10,7 +10,7 @@ class ZipWithSpec extends FlatSpec {
   val t = List(5, 7, 9)
 
   "test zipWith function" should "success" in {
-    val r = List.zipWith(a,b)(_ + _)
+    val r = List.zipWith(a, b)(_ + _)
     assert(r == t)
   }
 }

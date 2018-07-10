@@ -10,5 +10,5 @@ class FoldLeftAndRightInteroperateSpec extends FlatSpec {
     val s1 = List.foldRigt(a, 0)(_ + _)
     val s2 = List.foldRigtViaFoldLeft(a, 0)(_ + _)
     assert(s1 == s2)
- }
+  }
 }

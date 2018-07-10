@@ -1,6 +1,6 @@
 package test.fpscala.datastructures
 
-import org. scalatest._
+import org.scalatest._
 import fpscala.datastructures._
 
 class FoldRightSpec extends FlatSpec {

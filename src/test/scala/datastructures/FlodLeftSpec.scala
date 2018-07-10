@@ -20,7 +20,7 @@ class FoldLeftSpec extends FlatSpec {
   }
 
   def reverse[A](as: List[A]): List[A] = {
-    List.foldLeft(as,Nil:List[A])((a, b) => Cons(b, a))
+    List.foldLeft(as, Nil: List[A])((a, b) => Cons(b, a))
   }
 
   "implement sum method with foldLeft" should "same as real sum" in {

@@ -19,6 +19,6 @@ class FilterSpec extends FlatSpec {
 
   "filter function implemented with flatMap" should "success" in {
     val r = List.filterViaFlatMap(as)(f)
-    assert(r ==  t)
+    assert(r == t)
   }
 }

@@ -5,20 +5,22 @@ import fpscala.errorhandling._
 
 class TraverseSpec extends FlatSpec {
 
-  def traverse[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] =
-    a.foldRight[Option[List[B]]](Some(Nil))((x, y) => Option.map2(f(x), y)(_ :: _) )
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+    a.foldRight[Option[List[B]]](Some(Nil))((x, y) =>
+      Option.map2(f(x), y)(_ :: _))
 
-  def traverse_2[A,B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+  def traverse_2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
     a match {
-      case Nil => Some(Nil)
+      case Nil    => Some(Nil)
       case h :: t => Option.map2(f(h), traverse_2(t)(f))(_ :: _)
     }
   }
 
-  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] = traverse(a)(x => x)
+  def sequenceViaTraverse[A](a: List[Option[A]]): Option[List[A]] =
+    traverse(a)(x => x)
 
   "implment traverse function with fold right" should "success" in {
-    val list = List("1","2","3")
+    val list = List("1", "2", "3")
     val r = traverse_2(list)((x: String) => Option.Try(x.toInt))
     println(r)
     assert(true)

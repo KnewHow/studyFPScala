@@ -65,18 +65,18 @@ class BetterRNGSpec extends FlatSpec {
   }
 
   "test nonNegativeLessThan function" should "success" in {
-    val n  = 10
+    val n = 10
     val r1 = rng.nonNegativeLessThan(n)(rng)
 
     val r2 = rng.nonNegativeLessThan(n)(r1._2)
 
-     val r3 = rng.nonNegativeLessThan(n)(r2._2)
+    val r3 = rng.nonNegativeLessThan(n)(r2._2)
 
     assert(r1._1 <= 10 && r2._1 <= 10 && r3._1 <= 10)
   }
 
   "test nonNegativeLessThanViaFlatMap function" should "success" in {
-    val n  = 10
+    val n = 10
     val r1 = rng.nonNegativeLessThanViaFlatMap(n)(rng)
 
     val r2 = rng.nonNegativeLessThanViaFlatMap(n)(r1._2)
@@ -87,7 +87,8 @@ class BetterRNGSpec extends FlatSpec {
   }
 
   "implement map function with flatMap" should "success" in {
-    def nonNegativeIntEvent = rng.mapViaFlatMap(rng.nonNegativeInt)(i => i- i % 2)
+    def nonNegativeIntEvent =
+      rng.mapViaFlatMap(rng.nonNegativeInt)(i => i - i % 2)
 
     val r1 = nonNegativeIntEvent(rng)
     assert(r1._1 % 2 == 0)

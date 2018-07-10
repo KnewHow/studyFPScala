@@ -8,10 +8,13 @@ class TailSpec extends FlatSpec {
 
   val r = s.tails
   println(r.map(s => s.toList).toList)
-  assert(r.toList.map{e => e.toList} == List(
-    List(1,2,3),
-    List(2,3),
-    List(3),
-  ))
+  assert(
+    r.toList.map { e =>
+      e.toList
+    } == List(
+      List(1, 2, 3),
+      List(2, 3),
+      List(3),
+    ))
   // assert(true)
 }

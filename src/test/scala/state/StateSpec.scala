@@ -28,7 +28,7 @@ class StateSpec extends FlatSpec {
   }
 
   "test nonEvents function" should "success" in {
-    val events =rng.nonEvents(10)
+    val events = rng.nonEvents(10)
     val r = events.run(rng)._1.forall(i => i % 2 == 0)
     assert(r)
   }
@@ -41,7 +41,6 @@ class StateSpec extends FlatSpec {
   }
 }
 
-
 case class RNGViaState(seed: Long) {
   type Rand[A] = State[RNGViaState, A]
 
@@ -49,7 +48,7 @@ case class RNGViaState(seed: Long) {
     new Rand[Int](
       r => {
         val newSeed = (r.seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
-        val nextRNG =  RNGViaState(newSeed)
+        val nextRNG = RNGViaState(newSeed)
         val n = (newSeed >>> 16).toInt
         n -> nextRNG
       }
@@ -67,7 +66,7 @@ case class RNGViaState(seed: Long) {
     )
   }
 
-  def nonNegativeEvent: Rand[Int] = nextInt.map {i =>
+  def nonNegativeEvent: Rand[Int] = nextInt.map { i =>
     i - i % 2
   }
 

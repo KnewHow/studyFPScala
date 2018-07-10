@@ -14,5 +14,4 @@ class InfiniteStreamSpec extends FlatSpec {
     assert(true)
   }
 
-
 }

@@ -8,7 +8,7 @@ class RNGSpec extends FlatSpec {
   "implement random number generator" should "success" in {
     val rng = SimpleRNG(42)
     val (n1, r1) = rng.nextInt
-    val (n2,r2) = r1.nextInt
+    val (n2, r2) = r1.nextInt
     println("n1" -> n1)
     println("n2" -> n2)
     assert(true)
@@ -45,7 +45,7 @@ class RNGSpec extends FlatSpec {
 
   "implent double int funciton" should "success" in {
     val r = SimpleRNG(42)
-    val (v, r1)  = r.doubleInt(r)
+    val (v, r1) = r.doubleInt(r)
     println(s"double int f \n")
     println(s"v -> $v")
     assert(true)
