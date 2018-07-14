@@ -20,6 +20,34 @@ object Par {
     })
   }
 
+  def delay[A](fa: => Par[A]): Par[A] = es => fa(es)
+
+  def lazyUnit[A](a: A): Par[A] = fork(unit(a))
+
+  def asyncF[A, B](f: A => B): A => Par[B] = { (a: A) =>
+    lazyUnit(f(a))
+  }
+
+  def equals[A](e: ExecutorService)(p: Par[A], p2: Par[A]): Boolean =
+    p(e).get == p2(e).get
+
+  def sequence[A](ps: List[Par[A]]): Par[List[A]] =
+    ps.foldRight[Par[List[A]]](unit(List()))((a, b) => map2(a, b)(_ :: _))
+
+  def map[A, B](a: Par[A])(f: A => B): Par[B] =
+    map2(a, unit(()))((a, _) => f(a))
+
+  def parMap[A, B](a: List[A])(f: A => B): Par[List[B]] = fork {
+    val fbs: List[Par[B]] = a.map(asyncF(f))
+    sequence(fbs)
+  }
+
+  def parFilter[A](a: List[A])(f: A => Boolean): Par[List[A]] = {
+    val fbs: List[Par[List[A]]] =
+      a.map(asyncF((a: A) => if (f(a)) List(a) else List()))
+    map(sequence(fbs))(_.flatten)
+  }
+
   def map2WithTimeout[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C) = {
     (es: ExecutorService) =>
       {
