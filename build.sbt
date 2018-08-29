@@ -4,6 +4,9 @@ organization := "knew.how"
 version := "1.0"
 libraryDependencies += "org.typelevel" %% "cats-core" % "1.0.1"
 libraryDependencies ++= Seq(
-  "org.scalatest"  %% "scalatest"   % "3.0.5" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
   "org.typelevel" %% "cats" % "0.9.0"
 )
+
+scalafmtVersion in ThisBuild := "1.1.0"
+scalafmtOnCompile in ThisBuild := true
