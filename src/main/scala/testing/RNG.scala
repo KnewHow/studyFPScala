@@ -28,6 +28,8 @@ case class RNG(seed: Long) {
       start + r % (stopExclusive - start)
   }
 
+  def double: State[RNG, Double] = nextInt.map(r => r / (Int.MaxValue))
+
 }
 
 object RNG {
@@ -36,4 +38,6 @@ object RNG {
   def nonNegativeInt: State[RNG, Int] = r.nonNegativeInt
   def nextInt(start: Int, stopExclusive: Int): State[RNG, Int] =
     r.nextInt(start, stopExclusive)
+
+  def double = r.double
 }

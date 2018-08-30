@@ -83,6 +83,11 @@ sealed trait Stream[+A] {
   def forAll(f: A => Boolean): Boolean =
     this.foldRight(true)((a, b) => f(a) && b)
 
+  def find(f: A => Boolean): Option[A] = this match {
+    case Cons(h, t) => if (f(h())) Some(h()) else t().find(f)
+    case _          => None
+  }
+
   def takeWhileFoldRight(f: A => Boolean): Stream[A] =
     this.foldRight[Stream[A]](Stream.empty)(
       (a, b) =>

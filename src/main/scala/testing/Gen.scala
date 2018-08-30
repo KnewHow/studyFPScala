@@ -17,4 +17,15 @@ case class Gen[A](sample: State[RNG, A]) {
   def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap { n =>
     listOfN(n, this)
   }
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    boolean.flatMap(b => if (b) g1 else g2)
+
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
+    val g1Shreshould = g1._2 / (g1._2 + g2._2)
+    Gen(RNG.double).flatMap(g => if (g > g1Shreshould) g1._1 else g2._1)
+  }
+}
+
+object Gen {
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = g1.flatMap(a => g2)
 }
