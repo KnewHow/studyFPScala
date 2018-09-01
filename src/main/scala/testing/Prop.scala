@@ -14,7 +14,32 @@ case class Falsified(failure: String, successes: Int) extends Result {
   def isFalsified = true
 }
 
-case class Prop(run: (Int, RNG) => Result)
+case class Prop(run: (Int, RNG) => Result) {
+  def check(n: Int, rng: RNG): Unit = this.run(n, rng) match {
+    case Passed => println("all test passed")
+    case f: Falsified =>
+      println(
+        s"test case failure, case by ${f.failure}, But success ${f.successes} times")
+  }
+
+  def &&(p: Prop): Prop = Prop { (n, rng) =>
+    (this.run(n, rng), p.run(n, rng)) match {
+      case (Passed, Passed)       => Passed
+      case (f: Falsified, Passed) => f
+      case (Passed, f: Falsified) => f
+      case (f1: Falsified, f2: Falsified) =>
+        Falsified(f1.failure + "," + f2.failure, f1.successes + f2.successes)
+    }
+  }
+
+  def ||(p: Prop): Prop = Prop { (n, rng) =>
+    (this.run(n, rng), p.run(n, rng)) match {
+      case (Falsified(f1, s1), Falsified(f2, s2)) =>
+        Falsified(f1 + "," + f2, s1 + s2)
+      case _ => Passed
+    }
+  }
+}
 
 object Prop {
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop { (n, rng) =>

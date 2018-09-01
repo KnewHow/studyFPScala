@@ -23,21 +23,23 @@ case class RNG(seed: Long) {
         r
       }
     }
-  def nextInt(start: Int, stopExclusive: Int): State[RNG, Int] = nextInt.map {
-    r =>
+  def nextInt(start: Int, stopExclusive: Int): State[RNG, Int] =
+    nonNegativeInt.map { r =>
       start + r % (stopExclusive - start)
-  }
+    }
 
   def double: State[RNG, Double] = nextInt.map(r => r / (Int.MaxValue))
 
 }
 
 object RNG {
-  val r = RNG(42)
+  val r = RNG(System.currentTimeMillis)
   def boolean: State[RNG, Boolean] = r.boolean
   def nonNegativeInt: State[RNG, Int] = r.nonNegativeInt
   def nextInt(start: Int, stopExclusive: Int): State[RNG, Int] =
     r.nextInt(start, stopExclusive)
 
   def double = r.double
+
+  def get: RNG = r
 }

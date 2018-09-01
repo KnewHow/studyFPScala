@@ -2,9 +2,6 @@ package fpscala.testing
 
 import fpscala.state.State
 case class Gen[A](sample: State[RNG, A]) {
-  def choose(start: Int, stopExclusive: Int): Gen[Int] =
-    Gen(RNG.nextInt(start, stopExclusive))
-
   def unit[A](a: => A): Gen[A] = Gen(State.unit[RNG, A](a))
 
   def boolean: Gen[Boolean] = Gen(RNG.boolean)
@@ -24,8 +21,12 @@ case class Gen[A](sample: State[RNG, A]) {
     val g1Shreshould = g1._2 / (g1._2 + g2._2)
     Gen(RNG.double).flatMap(g => if (g > g1Shreshould) g1._1 else g2._1)
   }
+
+  def unsized: SGen[A] = SGen(_ => this)
 }
 
 object Gen {
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] = g1.flatMap(a => g2)
+  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+    Gen(RNG.nextInt(start, stopExclusive))
 }
