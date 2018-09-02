@@ -76,6 +76,8 @@ object NoBlockPar {
   def equals[A](es: ExecutorService)(p1: Par[A], p2: Par[A]): Boolean =
     run(es)(p1) == run(es)(p2)
 
+  def equals[A](p1: Par[A], p2: Par[A]): Par[Boolean] = map2(p1, p2)(_ == _)
+
   def parMap[A, B](ls: List[A])(f: A => B): Par[List[B]] = fork {
     val fbs: List[Par[B]] = ls.map(asyncF(f))
     sequence(fbs)

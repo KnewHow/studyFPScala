@@ -1,14 +1,16 @@
 package fpscala.testing
 
 import fpscala.laziness.Stream
+import fpscala.parallelism._
+import java.util.concurrent._
 
 case class SProp(run: (Int, Int, RNG) => Result) {
-  def check(
+  def test(
       maxSize: Int = 100,
       testCases: Int = 100,
       rng: RNG = RNG(System.currentTimeMillis)
   ): Unit = this.run(maxSize, testCases, rng) match {
-    case Passed => println("all test cases passed")
+    case Passed => println(s"OK, $testCases  testCases passed")
     case Falsified(msg, sc) =>
       println(s"test case failure, case by $msg, But success $sc times")
   }
@@ -52,5 +54,19 @@ object SProp {
           .reduce(_ && _)
         sp.run(maxSize, testCases, rng)
       }
+  }
+
+  def check(p: => Boolean): SProp = SProp { (_, _, _) =>
+    if (p) Passed else Falsified("()", 0)
+  }
+
+  val S = SGen.weighted[ExecutorService](
+    SGen.choose(1, 10).map(Executors.newFixedThreadPool) -> .75,
+    SGen.unit(Executors.newCachedThreadPool) -> .25
+  )
+
+  type Par[A] = (ExecutorService) => fpscala.parallelism.Future[A]
+  def forAllPar[A](g: SGen[A])(f: A => Par[Boolean]): SProp = forAll(S ** g) {
+    case (e, a) => NoBlockPar.run(e)(f(a))
   }
 }

@@ -27,6 +27,16 @@ class SPropSpec extends FlatSpec {
       val max = r.max
       !r.exists(_ > max)
     }
-    p.check()
+    // p.check()
+  }
+  "use SProp test sorted function" should "success" in {
+    val size = SGen.choose(1, 1000)
+    val sg = SGen.choose(1, 1000)
+    val gList = sg.listOfN(size)
+    val p = SProp.forAll(gList) { r =>
+      val min = r.sorted.headOption.get
+      !r.exists(_ < min)
+    }
+    p.test()
   }
 }

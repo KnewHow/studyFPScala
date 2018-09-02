@@ -31,6 +31,6 @@ class PropSpec extends FlatSpec {
       val max = r.max
       !r.exists(_ > max)
     }
-    prop.check(100, rng)
+    prop.test(100, rng)
   }
 }

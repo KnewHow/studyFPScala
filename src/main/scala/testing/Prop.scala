@@ -15,8 +15,8 @@ case class Falsified(failure: String, successes: Int) extends Result {
 }
 
 case class Prop(run: (Int, RNG) => Result) {
-  def check(n: Int, rng: RNG): Unit = this.run(n, rng) match {
-    case Passed => println("all test passed")
+  def test(n: Int, rng: RNG): Unit = this.run(n, rng) match {
+    case Passed => println(s"OK, $n testcases passed")
     case f: Falsified =>
       println(
         s"test case failure, case by ${f.failure}, But success ${f.successes} times")
