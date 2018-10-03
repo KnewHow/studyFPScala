@@ -1,8 +1,11 @@
 package fpscala.parallelism
 
-import java.util.concurrent._
+import java.util.concurrent.{Future => JFuture}
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.Callable
 object Par {
-  type Par[A] = ExecutorService => Future[A]
+  type Par[A] = ExecutorService => JFuture[A]
   def unit[A](a: A): Par[A] = (es: ExecutorService) => UnitFuture(a)
 
   def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
@@ -55,9 +58,9 @@ object Par {
       }
   }
 
-  def run[A](es: ExecutorService)(a: Par[A]): Future[A] = a(es)
+  def run[A](es: ExecutorService)(a: Par[A]): JFuture[A] = a(es)
 
-  private case class UnitFuture[A](get: A) extends Future[A] {
+  private case class UnitFuture[A](get: A) extends JFuture[A] {
     def isDone = true
 
     def get(timeout: Long, units: TimeUnit): A = get
@@ -69,8 +72,8 @@ object Par {
 
 }
 
-case class Map2Future[A, B, C](a: Future[A], b: Future[B], f: (A, B) => C)
-    extends Future[C] {
+case class Map2Future[A, B, C](a: JFuture[A], b: JFuture[B], f: (A, B) => C)
+    extends JFuture[C] {
 
   @volatile
   var cache: Option[C] = None

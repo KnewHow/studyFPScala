@@ -2,6 +2,7 @@ package test.fpscala.testing
 
 import org.scalatest._
 import fpscala.testing._
+import fpscala.parallelism.Par
 
 class SPropSpec extends FlatSpec {
   "test SProp forAll function" should "success" in {

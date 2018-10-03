@@ -16,7 +16,7 @@ class InsuranceRateQuoteOriginSpec extends FlatSpec {
   def insuranceRateQuote(age: Int, tickes: Int): Double = age * tickes
 
   "test insuranceRateQuote function" should "success" in {
-    val times = 100000000L
+    val times = 10000L
     val n = 999
     val m = 999
     for (i <- 1L to times) {

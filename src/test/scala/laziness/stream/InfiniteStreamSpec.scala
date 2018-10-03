@@ -10,7 +10,7 @@ class InfiniteStreamSpec extends FlatSpec {
     println(ones.take(5).toList)
     println(ones.takeWhile(_ == 1))
     println(ones.forAll(_ != 1))
-    println(ones.forAll(_ == 1)) // Stack over flow
+    // println(ones.forAll(_ == 1)) // Stack over flow
     assert(true)
   }
 

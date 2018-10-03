@@ -41,5 +41,7 @@ object RNG {
 
   def double = r.double
 
+  def Simple(l: Long) = State.unit(l)
+
   def get: RNG = r
 }

@@ -52,4 +52,13 @@ object Gen {
     l.foldLeft[Par[Int]](NoBlockPar.unit(0))((p, i) =>
       NoBlockPar.fork { NoBlockPar.map2(p, NoBlockPar.unit(i))(_ + _) })
   }
+
+  def genStringFn[A](g: Gen[A]): Gen[String => A] = Gen {
+    State { (rng: RNG) =>
+      val (seed, rng2) = rng.nextInt.run(rng)
+      val f =
+        (s: String) => g.sample.run(RNG(seed.toLong ^ s.hashCode.toLong))._1
+      (f, rng2)
+    }
+  }
 }

@@ -34,6 +34,15 @@ class PropParSpec extends FlatSpec {
         NoBlockPar.unit(2)
       )
     }
+    // p.test(10, 10)
+  }
+  "Test Par fork function" should "success" in {
+    val p = SProp.forAllPar(SGen.pint2) { r =>
+      NoBlockPar.equals(
+        NoBlockPar.fork(r),
+        r
+      )
+    }
     p.test(10, 10)
   }
 }

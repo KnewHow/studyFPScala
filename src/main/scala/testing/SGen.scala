@@ -1,5 +1,8 @@
 package fpscala.testing
 
+import fpscala.parallelism._
+import java.util.concurrent._
+
 case class SGen[A](forSize: Int => Gen[A]) {
 
   def boolean: SGen[Boolean] = SGen(forSize(_).boolean)
@@ -41,4 +44,6 @@ object SGen {
     val g1Shreshould = g1._2 / (g1._2 + g2._2)
     double.flatMap(r => if (r > g1Shreshould) g1._1 else g2._1)
   }
+  type Par[A] = (ExecutorService) => fpscala.parallelism.Future[A]
+  def pint2: SGen[Par[Int]] = SGen(r => Gen.pint2)
 }
