@@ -11,40 +11,62 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
   // Primitive methods, which can be used to generate other mehtods
 
   /**
-    * Do | with two parse, the second parameter is lazy evaluaction!
-    * If run first parameter failure, it will return a failure result, the second parameter will not be evaluated.
-    * If run first parameter successful, then the second parameter will be evaluated then run it.
-    */
+   * Do | with two parse, the second parameter is lazy evaluaction!
+   * If run first parameter failure, it will return a failure result, the second parameter will not be evaluated.
+   * If run first parameter successful, then the second parameter will be evaluated then run it.
+   */
   def or[A](p1: Parser[A], p2: => Parser[A]): Parser[A]
 
   /**
-    * Conver a Parser[A] to Parser[String], for example: slice(Parser(['a','b',a])) => Parser("aba")
-    */
+   * If most function, if the parser occur error, we don't know what error message will be tell.
+   * But in this function, we can convert a parser to another parser with error message. If you run it and
+   * occur error, it will tell the message you assigned.
+   * @param msg The error message you can assigned, it will be told when it parser fail
+   * @param p The original parser you can convert
+   */
+  def label[A](msg: String)(p: Parser[A]): Parser[A]
+
+  /**
+   * Conver a Parser[A] to Parser[String], when you run it,
+   * it will return the string the parser has scanned when the parser failure
+   *  for Example: run("a")("aab") will return "aa"
+   */
   def slice[A](p: Parser[A]): Parser[String]
 
   /**
-    * Run first Parser, then use it result to generate next Parser
-    */
+   * Run first Parser, then use it result to generate next Parser
+   */
   def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B]
 
   /**
-    * Convert A to Parser[A]
-    */
+   * Convert A to Parser[A]
+   *
+   */
   def succeed[A](a: A): Parser[A] = string("").map(_ => a)
 
   /**
-    * parsing regex to Parser[String]
-    */
+   * parsing regex to Parser[String], when you run it, it will run a string
+   * which input pass the regex
+   */
   implicit def regex(r: Regex): Parser[String]
 
   /**
-    * convert string to Parser[String], you can read more in stringLaw
-    */
+   * convert string to Parser[String], you can read more in stringLaw, When you run it, input string
+   * must start with s, otherwise a error will be return
+   * @param s The input string must start with it
+   */
   implicit def string(s: String): Parser[String]
 
   // Following methods are not primitive methods, which can be generate by primitive methods
   def map[A, B](p: Parser[A])(f: A => B): Parser[B] =
     flatMap(p)(r => succeed(f(r)))
+
+  /**
+   * Product two parser with (A, B), when you run it, the input string must statify Parser[A] then Parser[B].
+   * For example, when you `run(product("ab","cd"))("abcd")` will get ("ab","cd"), but if you run `run(product("ab","cd"))("abed")` will get a error
+   * @param p1 The Parser the input must satisfy at first
+   * @param p2 The Parser the input must satisfy and then
+   */
   def product[A, B](p1: Parser[A], p2: => Parser[B]): Parser[(A, B)] =
     flatMap(p1) { r1 =>
       map(p2) { r2 =>
@@ -52,14 +74,18 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
       }
     }
   def map2Native[A, B, C](p1: Parser[A], p2: => Parser[B])(
-      f: (A, B) => C): Parser[C] = flatMap(p1) { r1 =>
+    f: (A, B) => C): Parser[C] = flatMap(p1) { r1 =>
     map(p2) { r2 =>
       f(r1, r2)
     }
   }
   def map2[A, B, C](p1: Parser[A], p2: => Parser[B])(
-      f: (A, B) => C): Parser[C] =
+    f: (A, B) => C): Parser[C] =
     map(product(p1, p2))(f.tupled)
+
+  /**
+   * Assigned string whether repeat n times of Parser[A], you can refer `listOfNRaw`
+   */
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] = n match {
     case m if m <= 0 => succeed(List())
     case _           => map2(p, listOfN(n - 1, p))(_ :: _)
@@ -67,24 +93,24 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
   def wrap[A](a: => Parser[A]): Parser[A]
 
   /**
-    * Calculating how many times A appear in assigned string.
-    * The reuslt is Parser[List[A]] whose size is the times
-    * If A don't appear, The list is empty
-    */
+   * Calculating how many times A appear in assigned string.
+   * The reuslt is Parser[List[A]] whose size is the times
+   * If A don't appear, The list is empty
+   */
   def many[A](p: Parser[A]): Parser[List[A]] =
     map2(p, many(p))(_ :: _) or succeed(List())
 
   /**
-    * Calculating how many times A appear in assigned string.
-    * The only diff between many is if the a don't appear, a error will be return
-    */
+   * Calculating how many times A appear in assigned string.
+   * The only diff between many is if the a don't appear, a error will be return
+   */
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
   def productViaMap2[A, B](p1: Parser[A], p2: => Parser[B]): Parser[(A, B)] =
     map2Native(p1, p2)(_ -> _)
   def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
   implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps(p)
   implicit def asStringParser[A](a: A)(
-      implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
+    implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
   case class ParserOps[A](p: Parser[A]) {
     // The function is same with above, it make Parser interact easily
@@ -103,8 +129,8 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
   }
 
   /**
-    * validate Laws
-    */
+   * validate Laws
+   */
   object Laws {
     def equals[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
       forAll(in) { s =>
@@ -117,13 +143,17 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
       }
 
     /**
-      * a | b == b | a
-      */
+     * a | b == b | a
+     */
     def orLaw[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
       equals(or(p1, p2), or(p2, p1))(in)
 
     def stringLaw(in: Gen[String]): Prop = forAll(in) { s =>
       run(string(s))(s) == Right(s)
+    }
+
+    def listOfNRaw(n: Int)(in: Gen[String]): Prop = forAll(in) { s =>
+      run(listOfN(n, s))(s * n) == Right(s * n)
     }
 
     def mapLaw[A, B](p: Parser[A])(f: A => B)(in: Gen[String]): Prop =
@@ -133,29 +163,45 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
       equalsWithValue(succeed(a), a)(in)
 
     /**
-      * product Law is similar with multiplication associative, a * (b * c) ==  (a * b) * c,
-      * In Parse, The only diff is: a ** (b ** c) == (a ** b) ** c
-      */
+     * product Law is similar with multiplication associative, a * (b * c) ==  (a * b) * c,
+     * In Parse, The only diff is: a ** (b ** c) == (a ** b) ** c
+     */
     def productLaw[A, B, C](p1: Parser[A], p2: Parser[B], p3: Parser[C])(
-        in: Gen[String]): Prop =
+      in: Gen[String]): Prop =
       equals(
         (p1 ** p2) ** p3 map (unbiasL),
         p1 ** (p2 ** p3) map (unbiasR)
       )(in)
 
     /**
-      * convert left nested to 3-tuples
-      */
+     * convert left nested to 3-tuples
+     */
     private def unbiasL[A, B, C](p: ((A, B), C)): (A, B, C) =
       (p._1._1, p._1._2, p._2)
 
     /**
-      * convert right nested to 3-tuple
-      */
+     * convert right nested to 3-tuple
+     */
     private def unbiasR[A, B, C](p: (A, (B, C))): (A, B, C) =
       (p._1, p._2._1, p._2._2)
   }
 
 }
 
-trait PaserError
+/**
+ * A location represent input string and current parser parsing index
+ * @param input The input string
+ * @param offset The offset current parser parsing
+ */
+case class Location(input: String, offset: Int) {
+  // get line number by offset
+  val line = input.slice(0, offset + 1).count(_ == '\n') + 1
+  /**
+   * get column number by offset, If the input is a line, the offset is column number,
+   * but if the input contains '\n', the column number is total length - last line feed
+   */
+  val col = input.slice(0, offset + 1).lastIndexOf('\n') match {
+    case -1 => offset + 1
+    case startLine => offset - startLine
+  }
+}
