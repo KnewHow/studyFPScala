@@ -4,9 +4,9 @@ import fpscala.testing.Prop._
 import fpscala.testing._
 import scala.util.matching.Regex
 
-sealed trait Parsers[PaserError, Parser[+ _]] {
+trait Parsers[Parser[+ _]] {
   self =>
-  def run[A](p: Parser[A])(input: String): Either[PaserError, A]
+  def run[A](p: Parser[A])(input: String): Either[ParseError, A]
 
   // Primitive methods, which can be used to generate other mehtods
 
@@ -21,10 +21,23 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
    * If most function, if the parser occur error, we don't know what error message will be tell.
    * But in this function, we can convert a parser to another parser with error message. If you run it and
    * occur error, it will tell the message you assigned.
+   * You can get more at `lableLaw`
    * @param msg The error message you can assigned, it will be told when it parser fail
    * @param p The original parser you can convert
    */
   def label[A](msg: String)(p: Parser[A]): Parser[A]
+
+  /**
+   * In label function, if you run label parser failure, it will tell a error you assigned,
+   * but some times, we want error messages with a called stack. for example, if you run(p)(s) gives you
+   * a Left(e1), and you run run(scope(msg)(p))(s) gives you a Left(e2), then e2.stack.head is msg, e2.stack.tail
+   * is e1. In a word, scope will add error into a stack, then tell you overall.
+   * @param msg The error message you can assigned, it don't override original error message, it will be pushed into
+   * the stack after original error message
+   * @param p The original parser you can convert
+   * @return a new parser with stack error messages
+   */
+  def scope[A](msg: String)(p: Parser[A]): Parser[A]
 
   /**
    * Conver a Parser[A] to Parser[String], when you run it,
@@ -32,6 +45,11 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
    *  for Example: run("a")("aab") will return "aa"
    */
   def slice[A](p: Parser[A]): Parser[String]
+
+  /**
+   *  TODO add comment
+   */
+  def attempt[A](p: Parser[A]): Parser[A]
 
   /**
    * Run first Parser, then use it result to generate next Parser
@@ -56,6 +74,10 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
    * @param s The input string must start with it
    */
   implicit def string(s: String): Parser[String]
+
+  def errorLocation(e: ParseError): Location
+
+  def errorMessage(e: ParseError): String
 
   // Following methods are not primitive methods, which can be generate by primitive methods
   def map[A, B](p: Parser[A])(f: A => B): Parser[B] =
@@ -90,8 +112,6 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
     case m if m <= 0 => succeed(List())
     case _           => map2(p, listOfN(n - 1, p))(_ :: _)
   }
-  def wrap[A](a: => Parser[A]): Parser[A]
-
   /**
    * Calculating how many times A appear in assigned string.
    * The reuslt is Parser[List[A]] whose size is the times
@@ -173,6 +193,13 @@ sealed trait Parsers[PaserError, Parser[+ _]] {
         p1 ** (p2 ** p3) map (unbiasR)
       )(in)
 
+    def labelLaw[A](msg: String)(p: Parser[A])(in: Gen[String]): Prop = forAll(in){s =>
+      run(label(msg)(p))(s) match {
+        case Left(e) => errorMessage(e) == msg
+        case _ => true
+      }
+    }
+
     /**
      * convert left nested to 3-tuples
      */
@@ -205,3 +232,8 @@ case class Location(input: String, offset: Int) {
     case startLine => offset - startLine
   }
 }
+
+/**
+ * parse error stack, it will pull all error message in a stack and tell you overall.
+ */
+case class ParseError(stack: List[(Location, String)])
