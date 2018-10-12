@@ -214,26 +214,3 @@ trait Parsers[Parser[+ _]] {
   }
 
 }
-
-/**
- * A location represent input string and current parser parsing index
- * @param input The input string
- * @param offset The offset current parser parsing
- */
-case class Location(input: String, offset: Int) {
-  // get line number by offset
-  val line = input.slice(0, offset + 1).count(_ == '\n') + 1
-  /**
-   * get column number by offset, If the input is a line, the offset is column number,
-   * but if the input contains '\n', the column number is total length - last line feed
-   */
-  val col = input.slice(0, offset + 1).lastIndexOf('\n') match {
-    case -1 => offset + 1
-    case startLine => offset - startLine
-  }
-}
-
-/**
- * parse error stack, it will pull all error message in a stack and tell you overall.
- */
-case class ParseError(stack: List[(Location, String)])
