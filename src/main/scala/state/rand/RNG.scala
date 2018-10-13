@@ -40,7 +40,7 @@ trait RNG {
 }
 
 case class SimpleRNG(val seed: Long) extends RNG {
-  override def int: Rand[Int] = _.nextInt
+  override def int: Rand[Int]         = _.nextInt
   override def unit[A](a: A): Rand[A] = rng => (a, rng)
   override def map[A, B](s: Rand[A])(f: A => B): Rand[B] = { rng =>
     {
@@ -57,7 +57,7 @@ case class SimpleRNG(val seed: Long) extends RNG {
   }
 
   override def map2[A, B, C](ra: Rand[A], rb: Rand[B])(
-      f: (A, B) => C): Rand[C] = { rng =>
+    f: (A, B) => C): Rand[C] = { rng =>
     {
       val (n1, r1) = ra(rng)
       val (n2, r2) = rb(r1)
@@ -81,7 +81,7 @@ case class SimpleRNG(val seed: Long) extends RNG {
   override def nextInt: (Int, RNG) = {
     val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
     val nextRNG = SimpleRNG(newSeed)
-    val n = (newSeed >>> 16).toInt
+    val n       = (newSeed >>> 16).toInt
     n -> nextRNG
   }
 
@@ -136,7 +136,7 @@ case class SimpleRNG(val seed: Long) extends RNG {
   def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
     {
       val (v, rng2) = nonNegativeInt(rng)
-      val mod = v % n
+      val mod       = v % n
       if (v + (n - 1) - mod >= 0) (mod, rng2) else nonNegativeLessThan(n)(rng2)
     }
   }
@@ -157,7 +157,7 @@ case class SimpleRNG(val seed: Long) extends RNG {
   }
 
   def map2ViaFlatMap[A, B, C](as: Rand[A], bs: Rand[B])(
-      f: (A, B) => C): Rand[C] = flatMap(as) { i => rng =>
+    f: (A, B) => C): Rand[C] = flatMap(as) { i => rng =>
     {
       val (v, r2) = bs(rng)
       (f(i, v), r2)

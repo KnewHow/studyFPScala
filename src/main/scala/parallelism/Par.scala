@@ -94,10 +94,10 @@ case class Map2Future[A, B, C](a: JFuture[A], b: JFuture[B], f: (A, B) => C)
       case Some(r) => r
       case _ => {
         val start = System.nanoTime
-        val ar = a.get(timeoutInNano, TimeUnit.NANOSECONDS)
-        val end = System.nanoTime
-        val br = b.get(timeoutInNano - (end - start), TimeUnit.NANOSECONDS)
-        val cr = f(ar, br)
+        val ar    = a.get(timeoutInNano, TimeUnit.NANOSECONDS)
+        val end   = System.nanoTime
+        val br    = b.get(timeoutInNano - (end - start), TimeUnit.NANOSECONDS)
+        val cr    = f(ar, br)
         cache = Some(cr)
         cr
       }

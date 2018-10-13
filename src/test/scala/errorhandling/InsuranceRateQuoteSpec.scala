@@ -26,9 +26,10 @@ class InsuranceRateQuoteSpec extends FlatSpec {
     catch { case e: Exception => None }
   }
 
-  def strNumberMuti_2(age: String,
-                      numberOfSpeedingTickets: String): Option[Double] = {
-    val opAge = Try { age.toInt }
+  def strNumberMuti_2(
+    age: String,
+    numberOfSpeedingTickets: String): Option[Double] = {
+    val opAge     = Try { age.toInt }
     val opTickets = Try { numberOfSpeedingTickets.toInt }
     map2(opAge, opTickets)(_ * _)
   }
@@ -50,8 +51,8 @@ class InsuranceRateQuoteSpec extends FlatSpec {
     //   assert(r == Some(m * n * 1.0))
     // }
     val times = 10000000L
-    val n = 999
-    val m = 999
+    val n     = 999
+    val m     = 999
     for (i <- 1L to times) {
       val re = strNumberMuti(n.toString, m.toString)
       assert(re == Some(n * m * 1.0))

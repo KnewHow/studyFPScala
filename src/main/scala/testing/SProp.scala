@@ -6,9 +6,9 @@ import java.util.concurrent._
 
 case class SProp(run: (Int, Int, RNG) => Result) {
   def test(
-      maxSize: Int = 100,
-      testCases: Int = 100,
-      rng: RNG = RNG(System.currentTimeMillis)
+    maxSize: Int = 100,
+    testCases: Int = 100,
+    rng: RNG = RNG(System.currentTimeMillis)
   ): Unit = this.run(maxSize, testCases, rng) match {
     case Passed => println(s"OK, $testCases  testCases passed")
     case Falsified(msg, sc) =>
@@ -62,7 +62,7 @@ object SProp {
 
   val S = SGen.weighted[ExecutorService](
     SGen.choose(1, 10).map(Executors.newFixedThreadPool) -> .75,
-    SGen.unit(Executors.newCachedThreadPool) -> .25
+    SGen.unit(Executors.newCachedThreadPool)             -> .25
   )
 
   type Par[A] = (ExecutorService) => fpscala.parallelism.Future[A]

@@ -16,7 +16,7 @@ class VarianceSpec extends FlatSpec {
 
   "use flatMap implement variance function" should "success" in {
     val seq = Seq(1.0, 2.0, 3.0)
-    val r = variance(seq)
+    val r   = variance(seq)
     println(r)
     assert(true)
   }

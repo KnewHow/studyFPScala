@@ -10,7 +10,7 @@ object NoBlockPar {
     }
 
   def run[A](es: ExecutorService)(p: Par[A]): A = {
-    val ref = new java.util.concurrent.atomic.AtomicReference[A]()
+    val ref   = new java.util.concurrent.atomic.AtomicReference[A]()
     val count = new CountDownLatch(1)
     p(es) { a =>
       ref.set(a); count.countDown

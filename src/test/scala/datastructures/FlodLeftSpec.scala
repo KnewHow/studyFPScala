@@ -5,7 +5,7 @@ import org.scalatest._
 import fpscala.datastructures._
 
 class FoldLeftSpec extends FlatSpec {
-  val intList = List(1, 2, 3)
+  val intList    = List(1, 2, 3)
   val doubleList = List(1.0, 2.0, 3.0)
   def sum(as: List[Int]): Int = {
     List.foldLeft(as, 0)(_ + _)
@@ -40,7 +40,7 @@ class FoldLeftSpec extends FlatSpec {
 
   "implement reverse function with fold left" should "same as reversed result " in {
     val intListReverse = List(3, 2, 1)
-    val r = reverse(intList)
+    val r              = reverse(intList)
     assert(r == intListReverse)
   }
 }

@@ -75,9 +75,8 @@ trait Parsers[Parser[+ _]] {
    */
   implicit def string(s: String): Parser[String]
 
-  def errorLocation(e: ParseError): Location
-
-  def errorMessage(e: ParseError): String
+  def errorMessage(e: ParseError): String =
+    e.stack.headOption.map(_._2).getOrElse("")
 
   // Following methods are not primitive methods, which can be generate by primitive methods
   def map[A, B](p: Parser[A])(f: A => B): Parser[B] =
@@ -112,6 +111,7 @@ trait Parsers[Parser[+ _]] {
     case m if m <= 0 => succeed(List())
     case _           => map2(p, listOfN(n - 1, p))(_ :: _)
   }
+
   /**
    * Calculating how many times A appear in assigned string.
    * The reuslt is Parser[List[A]] whose size is the times
@@ -127,23 +127,23 @@ trait Parsers[Parser[+ _]] {
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
   def productViaMap2[A, B](p1: Parser[A], p2: => Parser[B]): Parser[(A, B)] =
     map2Native(p1, p2)(_ -> _)
-  def char(c: Char): Parser[Char] = string(c.toString).map(_.charAt(0))
+  def char(c: Char): Parser[Char]                       = string(c.toString).map(_.charAt(0))
   implicit def operators[A](p: Parser[A]): ParserOps[A] = ParserOps(p)
   implicit def asStringParser[A](a: A)(
     implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
   case class ParserOps[A](p: Parser[A]) {
     // The function is same with above, it make Parser interact easily
-    def |[B >: A](p2: Parser[B]): Parser[B] = self.or(p, p2)
-    def or[B >: A](p2: => Parser[B]): Parser[B] = self.or(p, p2)
-    def many: Parser[List[A]] = self.many(p)
-    def many1: Parser[List[A]] = self.many1(p)
-    def map[B](f: A => B): Parser[B] = self.map(p)(f)
-    def flatMap[B](f: A => Parser[B]) = self.flatMap(p)(f)
-    def product[B](p2: Parser[B]): Parser[(A, B)] = self.product(p, p2)
-    def slice[A]: Parser[String] = self.slice(p)
-    def **[B](p2: Parser[B]): Parser[(A, B)] = self.product(p, p2)
-    def numA: Parser[Int] = char('a').many.map(_.size)
+    def |[B >: A](p2: Parser[B]): Parser[B]          = self.or(p, p2)
+    def or[B >: A](p2: => Parser[B]): Parser[B]      = self.or(p, p2)
+    def many: Parser[List[A]]                        = self.many(p)
+    def many1: Parser[List[A]]                       = self.many1(p)
+    def map[B](f: A => B): Parser[B]                 = self.map(p)(f)
+    def flatMap[B](f: A => Parser[B])                = self.flatMap(p)(f)
+    def product[B](p2: => Parser[B]): Parser[(A, B)] = self.product(p, p2)
+    def slice[A]: Parser[String]                     = self.slice(p)
+    def **[B](p2: => Parser[B]): Parser[(A, B)]      = self.product(p, p2)
+    def numA: Parser[Int]                            = char('a').many.map(_.size)
     def count(a: Char, b: Char): Parser[(Int, Int)] =
       many.slice.map(_.size) ** many1.slice.map(_.size)
   }
@@ -193,12 +193,13 @@ trait Parsers[Parser[+ _]] {
         p1 ** (p2 ** p3) map (unbiasR)
       )(in)
 
-    def labelLaw[A](msg: String)(p: Parser[A])(in: Gen[String]): Prop = forAll(in){s =>
-      run(label(msg)(p))(s) match {
-        case Left(e) => errorMessage(e) == msg
-        case _ => true
+    def labelLaw[A](msg: String)(p: Parser[A])(in: Gen[String]): Prop =
+      forAll(in) { s =>
+        run(label(msg)(p))(s) match {
+          case Left(e) => errorMessage(e) == msg
+          case _       => true
+        }
       }
-    }
 
     /**
      * convert left nested to 3-tuples

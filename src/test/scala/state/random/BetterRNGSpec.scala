@@ -14,7 +14,7 @@ class BetterRNGSpec extends FlatSpec {
   }
 
   "test rand map function" should "success" in {
-    val r = rng.int
+    val r  = rng.int
     val r1 = rng.map(r)(i => i / 10.0)
     println(s"r -> $r")
     println(s"r1 -> ${r1}")
@@ -52,20 +52,20 @@ class BetterRNGSpec extends FlatSpec {
 
   "implement sequence function with foldright and map2" should "success" in {
     val fs = List.fill(10)(rng.int)
-    val r = rng.sequence(fs)
+    val r  = rng.sequence(fs)
     println(s"sequence -> ${r(rng)}")
     assert(true)
   }
 
   "implement ints with with sequence function" should "success" in {
-    val r = rng.intsViaSequence(10)
+    val r  = rng.intsViaSequence(10)
     val r1 = r(rng)._1
     val r2 = rng.ints(10)(rng)._1
     assert(r1 == r2)
   }
 
   "test nonNegativeLessThan function" should "success" in {
-    val n = 10
+    val n  = 10
     val r1 = rng.nonNegativeLessThan(n)(rng)
 
     val r2 = rng.nonNegativeLessThan(n)(r1._2)
@@ -76,7 +76,7 @@ class BetterRNGSpec extends FlatSpec {
   }
 
   "test nonNegativeLessThanViaFlatMap function" should "success" in {
-    val n = 10
+    val n  = 10
     val r1 = rng.nonNegativeLessThanViaFlatMap(n)(rng)
 
     val r2 = rng.nonNegativeLessThanViaFlatMap(n)(r1._2)
@@ -96,7 +96,7 @@ class BetterRNGSpec extends FlatSpec {
 
   "implement map2 function with flatMap" should "success" in {
     val as = List.fill(3)(rng.unit(8))
-    val r = rng.sequence2(as)(rng)
+    val r  = rng.sequence2(as)(rng)
     assert(r._1 == List(8, 8, 8))
   }
 }

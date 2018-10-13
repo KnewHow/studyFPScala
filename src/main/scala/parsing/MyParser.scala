@@ -8,51 +8,56 @@ object ParserImpl {
 
   object MyParser extends Parsers[MyParser] {
 
-    def run[A](p: MyParser[A])(input: String): Either[ParseError, A] = p(Location(input, 0)) match {
-      case Success(a, _) => Right(a)
-      case Failure(e, _) => Left(e)
-    }
-
-    def or[A](p1: MyParser[A], p2: => MyParser[A]): MyParser[A] =
-      loc => p1(loc) match {
-        case Failure(e, false) => p2(loc)
-        case r => r
+    def run[A](p: MyParser[A])(input: String): Either[ParseError, A] =
+      p(Location(input, 0)) match {
+        case Success(a, _) => Right(a)
+        case Failure(e, _) => Left(e)
       }
 
-    def label[A](msg: String)(p: MyParser[A]): MyParser[A] = loc => p(loc) mapError(_.label(loc, msg))
+    def or[A](p1: MyParser[A], p2: => MyParser[A]): MyParser[A] =
+      loc =>
+        p1(loc) match {
+          case Failure(e, false) => p2(loc)
+          case r                 => r
+      }
+
+    def label[A](msg: String)(p: MyParser[A]): MyParser[A] =
+      loc => p(loc) mapError (_.label(loc, msg))
 
     def scope[A](msg: String)(p: MyParser[A]): MyParser[A] =
-      loc => p(loc) mapError(e => e.push(loc, msg))
+      loc => p(loc) mapError (e => e.push(loc, msg))
 
     def slice[A](p: MyParser[A]): MyParser[String] =
-      loc => p(loc) match {
-        case Success(_, n) => Success(loc.consumerString(n), n)
-        case f@Failure(_, _) => f
+      loc =>
+        p(loc) match {
+          case Success(_, n)     => Success(loc.consumerString(n), n)
+          case f @ Failure(_, _) => f
       }
 
     def attempt[A](p: MyParser[A]): MyParser[A] =
       loc => p(loc).uncommit
 
     def flatMap[A, B](p: MyParser[A])(f: A => MyParser[B]): MyParser[B] =
-      loc => p(loc) match {
-        case Success(a, n) =>
-          f(a)(loc.advanceBy(n))
-            .addCommit(n != 0)
-            .advanceSuccess(n)
-        case f@Failure(_, _) => f
+      loc =>
+        p(loc) match {
+          case Success(a, n) =>
+            f(a)(loc.advanceBy(n))
+              .addCommit(n != 0)
+              .advanceSuccess(n)
+          case f @ Failure(_, _) => f
       }
-
 
     /**
      * In this implement, regex matching is all-or-nothing.
      */
     implicit def regex(r: Regex): MyParser[String] =
-      loc => r.findPrefixOf(loc.input) match {
-        case Some(s) =>
-          Success(s, s.length)
-        case None =>
-          val msg = s"regex $r"
-          Failure(loc.toError(msg), false)
+      loc =>
+        r.findPrefixOf(loc.input) match {
+          case Some(s) =>
+            Success(s, s.length)
+          case None =>
+            val msg = s"regex $r"
+            Failure(loc.toError(msg), false)
       }
 
     implicit def string(s: String): MyParser[String] =
@@ -66,9 +71,21 @@ object ParserImpl {
         }
       }
 
-    def errorLocation(e: ParseError): Location = ???
+    override def many[A](p: MyParser[A]): MyParser[List[A]] = loc => {
+      import scala.collection.mutable.ArrayBuffer
+      var consumerList = new ArrayBuffer[A]()
+      def go(offset: Int): Result[List[A]] = p(loc.advanceBy(offset)) match {
+        case Success(a, n) =>
+          consumerList += a
+          go(offset + n)
+        case f @ Failure(_, true) => f
+        case Failure(e, false)    => Success(consumerList.toList, offset)
+      }
+      go(0)
+    }
 
-    def errorMessage(e: ParseError): String = ???
+    def defectiveMany[A](p: MyParser[A]): MyParser[List[A]] = super.many(p)
+
   }
 
   /**
@@ -77,12 +94,17 @@ object ParserImpl {
    * differed. If s2 longer than s1, return s1.length
    */
   private def firstNonMatchingIndex(s1: String, s2: String, offset: Int): Int = {
-    var i = 0
-    while(i < s1.length && i < s2.length) {
-      if (s1.charAt(offset + 1) != s2.charAt(i)) return i
-      i += 1
+    if (offset >= s1.length) {
+      0
+    } else {
+      var i = 0
+      while (i < s1.length && i < s2.length) {
+        if (s1.charAt(offset + i) != s2.charAt(i)) return i
+        i += 1
+      }
+      if (s1.length - offset >= s2.length) -1 else s1.length - offset
     }
-    if (s1.length - offset >= s2.length) -1 else s1.length - offset
+
   }
 
 }

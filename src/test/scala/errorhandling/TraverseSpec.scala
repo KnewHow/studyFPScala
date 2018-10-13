@@ -21,7 +21,7 @@ class TraverseSpec extends FlatSpec {
 
   "implment traverse function with fold right" should "success" in {
     val list = List("1", "2", "3")
-    val r = traverse_2(list)((x: String) => Option.Try(x.toInt))
+    val r    = traverse_2(list)((x: String) => Option.Try(x.toInt))
     println(r)
     assert(true)
   }

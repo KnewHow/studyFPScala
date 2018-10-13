@@ -22,10 +22,11 @@ class ScalaTestSpec
       for (n <- Gen.choose(Integer.MIN_VALUE + 1, Integer.MAX_VALUE)) yield n
     val validDenoms =
       for (d <- validNumers if d != 0) yield d
-    forAll((validNumers, "n"),
-           (validDenoms, "d"),
-           minSuccessful(500),
-           maxDiscarded(300)) { (n: Int, d: Int) =>
+    forAll(
+      (validNumers, "n"),
+      (validDenoms, "d"),
+      minSuccessful(500),
+      maxDiscarded(300)) { (n: Int, d: Int) =>
       whenever(
         d != 0 && d != Integer.MIN_VALUE
           && n != Integer.MIN_VALUE) {

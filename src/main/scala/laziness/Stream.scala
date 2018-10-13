@@ -7,17 +7,17 @@ sealed trait Stream[+A] {
   }
 
   /**
-    *  natural implement
-    */
+   *  natural implement
+   */
   def toListRecursive: List[A] = this match {
     case Empty      => List.empty
     case Cons(h, t) => h() +: t().toListRecursive
   }
 
   /**
-    * Above implement is not tail-recursive, if the list is too much, it will produce stack over flow. So we can use reverse
-    * to implement this with tail-recurseive
-    */
+   * Above implement is not tail-recursive, if the list is too much, it will produce stack over flow. So we can use reverse
+   * to implement this with tail-recurseive
+   */
   def toListReverse: List[A] = {
     def go(s: Stream[A], l: List[A]): List[A] = s match {
       case Cons(h, t) => go(t(), h() :: l)
@@ -192,12 +192,12 @@ sealed trait Stream[+A] {
   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
     foldRight[(B, Stream[B])](z -> Stream(z)) { (a, p0) =>
       lazy val p1 = p0
-      val b2 = f(a, p1._1)
+      val b2      = f(a, p1._1)
       (b2, Stream.cons(b2, p1._2))
     }._2
 
 }
-case object Empty extends Stream[Nothing]
+case object Empty                                   extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
 object Stream {

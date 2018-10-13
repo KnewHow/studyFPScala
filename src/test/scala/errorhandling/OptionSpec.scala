@@ -28,9 +28,10 @@ class OptionSpec extends FlatSpec {
   }
 }
 
-case class Employee(name: String,
-                    department: String,
-                    manager: Option[String] = None)
+case class Employee(
+  name: String,
+  department: String,
+  manager: Option[String] = None)
 
 object Employee {
   def getEmployees: Option[Employee] = {

@@ -7,7 +7,7 @@ case class RNG(seed: Long) {
       r => {
         val newSeed = (r.seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
         val nextRNG = RNG(newSeed)
-        val n = (newSeed >>> 16).toInt
+        val n       = (newSeed >>> 16).toInt
         n -> nextRNG
       }
     )
@@ -33,8 +33,8 @@ case class RNG(seed: Long) {
 }
 
 object RNG {
-  val r = RNG(System.currentTimeMillis)
-  def boolean: State[RNG, Boolean] = r.boolean
+  val r                               = RNG(System.currentTimeMillis)
+  def boolean: State[RNG, Boolean]    = r.boolean
   def nonNegativeInt: State[RNG, Int] = r.nonNegativeInt
   def nextInt(start: Int, stopExclusive: Int): State[RNG, Int] =
     r.nextInt(start, stopExclusive)

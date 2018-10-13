@@ -14,10 +14,10 @@ class JavaFutureSpec extends FlatSpec {
     }
   }
   "Test Java Future" should "success" in {
-    val ex = Executors.newFixedThreadPool(10)
-    val task = getTask
+    val ex     = Executors.newFixedThreadPool(10)
+    val task   = getTask
     val future = ex.submit(task)
-    val r = future.get()
+    val r      = future.get()
     println(s"Test Thread Name->${Thread.currentThread.getName()}")
     println(s"result->$r")
     assert(r == "lala")

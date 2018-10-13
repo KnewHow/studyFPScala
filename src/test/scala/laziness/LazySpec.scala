@@ -3,7 +3,7 @@ package test.fpscala.laziness
 import org.scalatest._
 
 class LazySpec extends FlatSpec {
-  def sum(a: Int, b: Int): Int = a + b
+  def sum(a: Int, b: Int): Int        = a + b
   def sumLazy(a: Int, b: => Int): Int = a
 
   val a = 3

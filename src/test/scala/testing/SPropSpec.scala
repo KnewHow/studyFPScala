@@ -7,12 +7,12 @@ import fpscala.parallelism.Par
 class SPropSpec extends FlatSpec {
   "test SProp forAll function" should "success" in {
     val sg = SGen.choose(1, 10)
-    val p = SProp.forAll(sg)(_ < 10)
+    val p  = SProp.forAll(sg)(_ < 10)
     // p.check()
   }
   "use SProp test reverse function" should "success" in {
-    val size = SGen.choose(1, 1000)
-    val sg = SGen.choose(1, 10000)
+    val size  = SGen.choose(1, 1000)
+    val sg    = SGen.choose(1, 10000)
     val gList = sg.listOfN(size)
     val p = SProp.forAll(gList) { r =>
       r.reverse.reverse == r && r.headOption == r.reverse.lastOption
@@ -21,8 +21,8 @@ class SPropSpec extends FlatSpec {
   }
 
   "use SProp test max function" should "success" in {
-    val size = SGen.choose(1, 10)
-    val sg = SGen.choose(1, 100)
+    val size  = SGen.choose(1, 10)
+    val sg    = SGen.choose(1, 100)
     val gList = sg.listOfN(size)
     val p = SProp.forAll(gList) { r =>
       val max = r.max
@@ -31,8 +31,8 @@ class SPropSpec extends FlatSpec {
     // p.check()
   }
   "use SProp test sorted function" should "success" in {
-    val size = SGen.choose(1, 1000)
-    val sg = SGen.choose(1, 1000)
+    val size  = SGen.choose(1, 1000)
+    val sg    = SGen.choose(1, 1000)
     val gList = sg.listOfN(size)
     val p = SProp.forAll(gList) { r =>
       val min = r.sorted.headOption.get

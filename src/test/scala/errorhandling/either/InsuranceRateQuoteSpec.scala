@@ -5,8 +5,8 @@ import fpscala.errorhandling._
 
 class InsuranceRateQuoteSpec extends FlatSpec {
   def parseInsuranceRateQuote(
-      age: String,
-      numberOfSpeedingTickets: String): Either[Exception, Double] = {
+    age: String,
+    numberOfSpeedingTickets: String): Either[Exception, Double] = {
     for {
       a <- Either.Try(age.toInt)
       b <- Either.Try(numberOfSpeedingTickets.toInt)
