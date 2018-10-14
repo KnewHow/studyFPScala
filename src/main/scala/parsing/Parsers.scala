@@ -3,6 +3,7 @@ package fpscala.parsing
 import fpscala.testing.Prop._
 import fpscala.testing._
 import scala.util.matching.Regex
+import fpscala.basic.Logger.Logger
 
 trait Parsers[Parser[+ _]] {
   self =>
@@ -60,7 +61,7 @@ trait Parsers[Parser[+ _]] {
    * Convert A to Parser[A]
    *
    */
-  def succeed[A](a: A): Parser[A] = string("").map(_ => a)
+  def succeed[A](a: A): Parser[A]
 
   /**
    * parsing regex to Parser[String], when you run it, it will run a string
@@ -79,7 +80,7 @@ trait Parsers[Parser[+ _]] {
     e.stack.headOption.map(_._2).getOrElse("")
 
   // Following methods are not primitive methods, which can be generate by primitive methods
-  def map[A, B](p: Parser[A])(f: A => B): Parser[B] =
+  def map[A, B](p: => Parser[A])(f: A => B): Parser[B] =
     flatMap(p)(r => succeed(f(r)))
 
   /**

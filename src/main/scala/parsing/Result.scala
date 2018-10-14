@@ -41,6 +41,8 @@ case class Location(input: String, offset: Int) {
     List(this -> msg)
   )
 
+  def currentInput: String = input.substring(offset)
+
   def consumerString(n: Int): String = this.input.substring(offset, offset + n)
 
   // get line number by offset
@@ -69,4 +71,10 @@ case class ParseError(stack: List[(Location, String)]) {
   def latestLoc: Option[Location] = latest.map(_._1)
 
   def latest: Option[(Location, String)] = stack.lastOption
+
+  override def toString = {
+    stack.map { r =>
+      s" at ${r._1.line} line ${r._1.col} column cause by ${r._2} \n"
+    }.foldLeft("\n Parsing Error\n")(_ + _)
+  }
 }

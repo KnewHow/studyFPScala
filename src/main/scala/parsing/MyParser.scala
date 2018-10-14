@@ -1,4 +1,5 @@
 package fpscala.parsing
+import fpscala.basic.Logger.Logger
 
 import scala.util.matching.Regex
 
@@ -52,13 +53,15 @@ object ParserImpl {
      */
     implicit def regex(r: Regex): MyParser[String] =
       loc =>
-        r.findPrefixOf(loc.input) match {
+        r.findPrefixOf(loc.currentInput) match {
           case Some(s) =>
             Success(s, s.length)
           case None =>
             val msg = s"regex $r"
             Failure(loc.toError(msg), false)
       }
+
+    def succeed[A](a: A): MyParser[A] = loc => Success(a, 0)
 
     implicit def string(s: String): MyParser[String] =
       loc => {
