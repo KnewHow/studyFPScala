@@ -1,6 +1,7 @@
 package fpscala.parsing
 
 import fpscala.testing.Prop._
+import java.util.regex.Pattern
 import fpscala.testing._
 import scala.util.matching.Regex
 import fpscala.basic.Logger.Logger
@@ -133,6 +134,42 @@ trait Parsers[Parser[+ _]] {
   implicit def asStringParser[A](a: A)(
     implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
+  /**
+   * Parser which consumes reluctantly until it encounters the given string.
+   */
+  def thru(s: String): Parser[String] = (".*?" + Pattern.quote(s)).r
+
+  def quoted: Parser[String] = "\"" *> thru("\"").map(_.dropRight(1))
+
+  /**
+   * Wrap `p` with start/stop delimiters
+   */
+  def surround[A](start: Parser[Any], stop: Parser[Any])(
+    p: => Parser[A]): Parser[A] =
+    start *> p <* stop
+
+  /**
+   * attempt `p` and strips tailing whitespace, usually used for token of a grammer
+   */
+  def token[A](p: Parser[A]): Parser[A] = attempt(p) <* whitespace
+
+  /**
+   * match one or more space or \n or \t
+   */
+  def whitespace: Parser[String] = "\\s*".r
+
+  /**
+   * run p and p1, then drop first result
+   */
+  def skipL[A, B](p1: Parser[A], p2: => Parser[B]): Parser[B] =
+    map2(p1, p2)((_, b) => b)
+
+  /**
+   * run p and p1, then drop the second result
+   */
+  def skipR[A, B](p1: Parser[A], p2: => Parser[B]): Parser[A] =
+    map2(p1, p2)((a, _) => a)
+
   case class ParserOps[A](p: Parser[A]) {
     // The function is same with above, it make Parser interact easily
     def |[B >: A](p2: Parser[B]): Parser[B]          = self.or(p, p2)
@@ -147,6 +184,10 @@ trait Parsers[Parser[+ _]] {
     def numA: Parser[Int]                            = char('a').many.map(_.size)
     def count(a: Char, b: Char): Parser[(Int, Int)] =
       many.slice.map(_.size) ** many1.slice.map(_.size)
+
+    def <*[B](p1: => Parser[B]): Parser[A] = self.skipR(p, p1)
+
+    def *>[B](p1: Parser[B]): Parser[B] = self.skipL(p, p1)
   }
 
   /**
