@@ -38,7 +38,7 @@ class JSONParserSpec extends FlatSpec {
   val json: MyParser[JSON] = JSON.jsonParser(MyParser)
 
   "test parse json" should "success" in {
-    printResult { MyParser.run(json)(malformedJson1) }
+    printResult { MyParser.run(json)(malformedJson2) }
     succeed
   }
 }

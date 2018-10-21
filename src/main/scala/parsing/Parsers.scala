@@ -210,7 +210,7 @@ trait Parsers[Parser[+ _]] {
 
   case class ParserOps[A](p: Parser[A]) {
     // The function is same with above, it make Parser interact easily
-    def |[B >: A](p2: Parser[B]): Parser[B]          = self.or(p, p2)
+    def |[B >: A](p2: => Parser[B]): Parser[B]       = self.or(p, p2)
     def or[B >: A](p2: => Parser[B]): Parser[B]      = self.or(p, p2)
     def many: Parser[List[A]]                        = self.many(p)
     def many1: Parser[List[A]]                       = self.many1(p)

@@ -11,8 +11,7 @@ object ParserImpl {
 
     def run[A](p: MyParser[A])(input: String): Either[ParseError, A] =
       p(Location(input, 0)) match {
-        case Success(a, c) =>
-          Logger.info(s"consumer->$c")
+        case Success(a, _) =>
           Right(a)
         case Failure(e, _) => Left(e)
       }
