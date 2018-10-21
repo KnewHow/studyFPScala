@@ -135,11 +135,49 @@ trait Parsers[Parser[+ _]] {
     implicit f: A => Parser[String]): ParserOps[String] = ParserOps(f(a))
 
   /**
+   * A parser that succeeds when given empty input.
+   */
+  def eof: Parser[String] =
+    regex("\\z".r).label("unexpected trailing characters")
+
+  /**
+   * The root of the grammar, expects no further input following `p`.
+   */
+  def root[A](p: Parser[A]): Parser[A] =
+    p <* eof
+
+  /**
+   * One or more repetitions of `p`, separated by `p2`, whose results are ignored.
+   */
+  def sep[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] =
+    sep1(p, p2) or succeed(List())
+
+  /**
+   * One or more repetitions of `p`, separated by `p2`, whose results are ignored.
+   */
+  def sep1[A](p: Parser[A], p2: Parser[Any]): Parser[List[A]] =
+    map2(p, many(p2 *> p))(_ :: _)
+
+  /**
    * Parser which consumes reluctantly until it encounters the given string.
    */
   def thru(s: String): Parser[String] = (".*?" + Pattern.quote(s)).r
 
+  /**
+   * Unescaped string literals, like "foo" or "bar".
+   */
   def quoted: Parser[String] = "\"" *> thru("\"").map(_.dropRight(1))
+
+  def escapedQuoted: Parser[String] = token(quoted label "literal")
+
+  /** C/Java style floating point literals, e.g .1, -1.0, 1e9, 1E-23, etc.
+   * Result is left as a string to keep full precision
+   */
+  def doubleString: Parser[String] =
+    token("[-+]?([0-9]*\\.)?[0-9]+([eE][-+]?[0-9]+)?".r)
+
+  def double: Parser[Double] =
+    doubleString.map(_.toDouble) label "double literal"
 
   /**
    * Wrap `p` with start/stop delimiters
@@ -184,6 +222,17 @@ trait Parsers[Parser[+ _]] {
     def numA: Parser[Int]                            = char('a').many.map(_.size)
     def count(a: Char, b: Char): Parser[(Int, Int)] =
       many.slice.map(_.size) ** many1.slice.map(_.size)
+
+    def label(msg: String): Parser[A] = self.label(msg)(p)
+
+    def scope(msg: String): Parser[A] = self.scope(msg)(p)
+
+    def sep(p2: Parser[Any]): Parser[List[A]] = self.sep(p, p2)
+
+    /**
+     * Running p and drop the result, then convert it to another result.
+     */
+    def as[B](b: B): Parser[B] = slice.map(_ => b)
 
     def <*[B](p1: => Parser[B]): Parser[A] = self.skipR(p, p1)
 

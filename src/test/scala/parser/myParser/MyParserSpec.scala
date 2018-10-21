@@ -156,4 +156,94 @@ class MyParserSpec extends FlatSpec {
             .getOrElse(true))
     }
   }
+  "test token funciton" should "succeed" in {
+    val input = """123
+
+"""
+    val p     = token("123")
+    MyParser.run(p)(input) match {
+      case Right(r) =>
+        assert(r == "123")
+      case Left(e) =>
+        Logger.error(s"test token function took error->$e")
+        succeed
+    }
+  }
+
+  "test skipL function" should "succeed" in {
+    val input = ":How"
+    MyParser.run(":" *> "How")(input) match {
+      case Right(r) =>
+        assert(r == "How")
+      case Left(e) =>
+        Logger.error(s"test shikL took error->$e")
+        succeed
+    }
+  }
+
+  "test skipR function" should "succeed" in {
+    val input = "fname:How"
+    MyParser.run("fname" <* ":")(input) match {
+      case Right(r) =>
+        assert(r == "fname")
+      case Left(e) =>
+        Logger.error(s"test skipR function took error->$e")
+    }
+  }
+
+  "test surround function" should "succeed" in {
+    val input = "{KnewHow}"
+    MyParser.run(surround("{", "}")("KnewHow"))(input) match {
+      case Right(r) =>
+        assert(r == "KnewHow")
+      case Left(e) =>
+        Logger.error(s"test surround function took error->$e")
+        succeed
+    }
+  }
+
+  "test quoted function" should "succeed" in {
+    val input = "\"KnewHow\""
+    MyParser.run(quoted)(input) match {
+      case Right(r) =>
+        assert(r == "KnewHow")
+      case Left(e) =>
+        Logger.error(s"test quoted function took error->$e")
+        succeed
+    }
+  }
+  "test escapedQuoted funciton" should "succeed" in {
+    val input = """"KnewHow"
+
+"""
+    MyParser.run(escapedQuoted)(input) match {
+      case Right(r) =>
+        assert(r == "KnewHow")
+      case Left(e) =>
+        Logger.error(s"test escapedQuoted took error->$e")
+        succeed
+    }
+  }
+
+  "test sep function" should "succeed" in {
+    val input = "a,a,a,a"
+    MyParser.run(sep("a", ","))(input) match {
+      case Right(r) =>
+        r == List.fill(4)("a")
+      case Left(e) =>
+        Logger.error(s"test sep function took error->$e")
+        succeed
+    }
+  }
+
+  "test root function" should "succeed" in {
+    val input = "KnewHow"
+    MyParser.run("KnewHow")(input) match {
+      case Right(r) =>
+        r == "KnewHow"
+      case Left(e) =>
+        Logger.error(s"test root function took error->$e")
+        succeed
+    }
+  }
 }
