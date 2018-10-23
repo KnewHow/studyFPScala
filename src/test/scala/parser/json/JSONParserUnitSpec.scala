@@ -110,5 +110,4 @@ class JSONParserUnitSpec extends FlatSpec {
     }
   }
 
-  "test JSON Parser" should "succeed" in {}
 }
