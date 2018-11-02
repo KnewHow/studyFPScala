@@ -54,8 +54,10 @@ class MoniodSpec extends FlatSpec {
   }
 
   "test End monoid" should "succeed" in {
+    val g = Gen.choose(0, 10000)
     val p = EndMonoid().law(
-      Gen.choose(0, 1000).map { r => (x: Int) =>
+      g,
+      g.map { r => (x: Int) =>
         x + 1
       }
     )

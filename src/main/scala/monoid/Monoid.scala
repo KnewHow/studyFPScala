@@ -59,4 +59,18 @@ case class OptionMonoid[A]() extends Monoid[Option[A]] {
 case class EndMonoid[A]() extends Monoid[A => A] {
   def op(a: (A => A), b: (A => A)): A => A = a andThen b
   def zero                                 = (a: A) => a
+
+  def law(g: Gen[A], sg: Gen[A => A]): Prop = {
+    val a = Gen.run(g).take(10).toList.head
+    Prop.forAll(
+      for {
+        x <- sg
+        y <- sg
+        z <- sg
+      } yield (x, y, z)
+    ) { r =>
+      op(r._1, op(r._2, r._3))(a) == op(op(r._1, r._2), r._3)(a) &&
+      op(r._1, zero)(a) == op(zero, r._1)(a)
+    }
+  }
 }
