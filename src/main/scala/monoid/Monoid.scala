@@ -1,6 +1,7 @@
 package fpscala.monoid
 
 import prop.gen._
+import fpscala.basic.Logger.Logger
 
 trait Monoid[A] {
   def op(a: A, b: A): A
@@ -13,7 +14,9 @@ trait Monoid[A] {
         z <- gen
       } yield (x, y, z)
     ) { g =>
-      op(g._1, op(g._2, g._3)) == op(op(g._1, g._2), g._3)
+      // Logger.info(s"g->$g")
+      op(g._1, op(g._2, g._3)) == op(op(g._1, g._2), g._3) &&
+      op(g._1, zero) == op(zero, g._1)
     }
   }
 }
@@ -28,32 +31,32 @@ case class ListMonoid[A]() extends Monoid[List[A]] {
   def zero                                = Nil
 }
 
-case object IndAddation extends Monoid[Int] {
+case object IntAddation extends Monoid[Int] {
   def op(a: Int, b: Int): Int = a + b
   def zero                    = 0
 }
 
-case object Multiplication extends Monoid[Int] {
+case object IntMultiplication extends Monoid[Int] {
   def op(a: Int, b: Int): Int = a * b
   def zero                    = 1
 }
 
-case object booleanOr extends Monoid[Boolean] {
+case object BooleanOr extends Monoid[Boolean] {
   def op(a: Boolean, b: Boolean) = a || b
   def zero                       = false
 }
 
-case object booleanAnd extends Monoid[Boolean] {
+case object BooleanAnd extends Monoid[Boolean] {
   def op(a: Boolean, b: Boolean): Boolean = a && b
   def zero                                = true
 }
 
-case class optionMonoid[A]() extends Monoid[Option[A]] {
+case class OptionMonoid[A]() extends Monoid[Option[A]] {
   def op(a: Option[A], b: Option[A]): Option[A] = a orElse b
   def zero                                      = None
 }
 
-case class endMonoid[A]() extends Monoid[A => A] {
+case class EndMonoid[A]() extends Monoid[A => A] {
   def op(a: (A => A), b: (A => A)): A => A = a andThen b
   def zero                                 = (a: A) => a
 }
