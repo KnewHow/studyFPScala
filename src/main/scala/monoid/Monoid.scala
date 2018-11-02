@@ -1,6 +1,6 @@
 package fpscala.monoid
 
-import fpscala.testing._
+import prop.gen._
 
 trait Monoid[A] {
   def op(a: A, b: A): A
