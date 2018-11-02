@@ -1,8 +1,21 @@
 package fpscala.monoid
 
+import fpscala.testing._
+
 trait Monoid[A] {
   def op(a: A, b: A): A
   def zero: A
+  def law(gen: Gen[A]): Prop = {
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- gen
+        z <- gen
+      } yield (x, y, z)
+    ) { g =>
+      op(g._1, op(g._2, g._3)) == op(op(g._1, g._2), g._3)
+    }
+  }
 }
 
 case object StringMoniod extends Monoid[String] {
@@ -38,4 +51,9 @@ case object booleanAnd extends Monoid[Boolean] {
 case class optionMonoid[A]() extends Monoid[Option[A]] {
   def op(a: Option[A], b: Option[A]): Option[A] = a orElse b
   def zero                                      = None
+}
+
+case class endMonoid[A]() extends Monoid[A => A] {
+  def op(a: (A => A), b: (A => A)): A => A = a andThen b
+  def zero                                 = (a: A) => a
 }
