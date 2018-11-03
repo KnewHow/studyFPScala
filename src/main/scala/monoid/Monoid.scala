@@ -86,6 +86,50 @@ object Fold {
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as, EndMonoid[B]())(a => b => f(b, a))(z)
 
+  def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
+    v.size match {
+      case 0 =>
+        m.zero
+      case 1 =>
+        m.op(m.zero, f(v.head))
+      case _ =>
+        val (l, r) = v.splitAt(v.size / 2)
+        m.op(
+          foldMapV(l, m)(f),
+          foldMapV(r, m)(f)
+        )
+    }
+
+  def foldRightViaFoldMapV[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
+    foldMapV(as.toIndexedSeq, Monoid.dual(EndMonoid[B]()))(f.curried)(z)
+
+  def foldLeftViaFoldMapV[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+    foldMapV(as.toIndexedSeq, EndMonoid[B]())(a => b => f(b, a))(z)
+
+  def foldLeftViaFoldMapVLaw[A, B](gen: Gen[List[A]], z: Gen[B])(
+    f: (B, A) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+      case (as, z) =>
+        as.foldLeft(z)(f) == foldLeftViaFoldMapV(as)(z)(f)
+    }
+
+  def foldRightViaFoldMapVLaw[A, B](gen: Gen[List[A]], z: Gen[B])(
+    f: (A, B) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+      case (as, z) =>
+        as.foldRight(z)(f) == foldRightViaFoldMapV(as)(z)(f)
+    }
+
   def foldLeftLaw[A, B](gen: Gen[List[A]], z: Gen[B])(f: (B, A) => B): Prop =
     Prop.forAll(
       for {
@@ -108,7 +152,6 @@ object Fold {
       case (as, z) =>
         as.foldRight(z)(f) == foldRight(as)(z)(f)
     }
-
 }
 
 object Monoid {
