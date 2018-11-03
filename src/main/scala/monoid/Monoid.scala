@@ -100,6 +100,20 @@ object Fold {
         )
     }
 
+  def isOrderAsc(s: IndexedSeq[Int]): Boolean = {
+    type Compare = Option[(Int, Int, Boolean)]
+    val mon = new Monoid[Compare] {
+      def op(a: Compare, b: Compare) = (a, b) match {
+        case (Some((x1, y1, p)), Some((x2, y2, q))) =>
+          Some(x1 min x2, y1 max y2, p && q && y1 <= x2)
+        case (None, x) => x
+        case (x, None) => x
+      }
+      def zero = None
+    }
+    foldMapV(s, mon)(i => Some(i, i, true)).map(_._3).getOrElse(true)
+  }
+
   def foldRightViaFoldMapV[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
     foldMapV(as.toIndexedSeq, Monoid.dual(EndMonoid[B]()))(f.curried)(z)
 
