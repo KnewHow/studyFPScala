@@ -73,4 +73,47 @@ case class EndMonoid[A]() extends Monoid[A => A] {
       op(r._1, zero)(a) == op(zero, r._1)(a)
     }
   }
+
+}
+
+object Fold {
+  def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
+    as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
+
+  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
+    foldMap(as, Monoid.dual(EndMonoid[B]()))(f.curried)(z)
+
+  def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+    foldMap(as, EndMonoid[B]())(a => b => f(b, a))(z)
+
+  def foldLeftLaw[A, B](gen: Gen[List[A]], z: Gen[B])(f: (B, A) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+
+      case (as, z) =>
+        as.foldLeft(z)(f) == foldLeft(as)(z)(f)
+    }
+
+  def foldRightLaw[A, B](gen: Gen[List[A]], z: Gen[B])(f: (A, B) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+      case (as, z) =>
+        as.foldRight(z)(f) == foldRight(as)(z)(f)
+    }
+
+}
+
+object Monoid {
+  def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    def op(a: A, b: A): A = m.op(b, a)
+    def zero              = m.zero
+  }
 }
