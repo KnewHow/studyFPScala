@@ -2,6 +2,9 @@ package fpscala.monoid
 
 import prop.gen._
 import fpscala.basic.Logger.Logger
+import java.util.concurrent._
+import fpscala.parallelism.NoBlockPar
+import fpscala.parallelism.NoBlockPar._
 
 trait Monoid[A] {
   def op(a: A, b: A): A
@@ -98,6 +101,52 @@ object Fold {
           foldMapV(l, m)(f),
           foldMapV(r, m)(f)
         )
+    }
+
+  type Par[A] = (ExecutorService) => fpscala.parallelism.Future[A]
+  def par[A](m: Monoid[A]) = new Monoid[Par[A]] {
+    def op(a: Par[A], b: Par[A]) = NoBlockPar.map2(a, b)(m.op(_, _))
+    def zero                     = NoBlockPar.unit(m.zero)
+  }
+
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] =
+    NoBlockPar.parMap(v.toList)(f).flatMap { r =>
+      foldMapV(r.toIndexedSeq, par(m))(b => NoBlockPar.lazyUnit(b))
+    }
+
+  def foldLeftViaParFoldMap[A, B](as: List[A], z: B)(f: (B, A) => B): Par[B] =
+    parFoldMap(as.toIndexedSeq, EndMonoid[B]())(a => b => f(b, a)).map(r =>
+      r(z))
+
+  def foldRightViaParFoldMap[A, B](as: List[A], z: B)(f: (A, B) => B): Par[B] =
+    parFoldMap(as.toIndexedSeq, Monoid.dual(EndMonoid[B]()))(f.curried).map(r =>
+      r(z))
+
+  def foldLeftViaParFoldMapLaw[A, B](gen: Gen[List[A]], z: Gen[B])(
+    f: (B, A) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+      case (as, z) =>
+        val es = Executors.newFixedThreadPool(10)
+        val pr = foldLeftViaParFoldMap(as, z)(f)
+        as.foldLeft(z)(f) == pr.run(es)
+    }
+
+  def foldRightViaParFoldMapLaw[A, B](gen: Gen[List[A]], z: Gen[B])(
+    f: (A, B) => B): Prop =
+    Prop.forAll(
+      for {
+        x <- gen
+        y <- z
+      } yield x -> y
+    ) {
+      case (as, z) =>
+        val es = Executors.newFixedThreadPool(10)
+        as.foldRight(z)(f) == foldRightViaParFoldMap(as, z)(f).run(es)
     }
 
   def isOrderAsc(s: IndexedSeq[Int]): Boolean = {

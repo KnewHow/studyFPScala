@@ -31,4 +31,16 @@ class FoldSpec extends FlatSpec {
     val p = Fold.foldLeftViaFoldMapVLaw(g, z)(f)
     assert(p.test())
   }
+
+  "test foldLeftViaParFoldMap" should "succeed" in {
+    val f = (y: String, x: Int) => x + y
+    val p = Fold.foldLeftViaParFoldMapLaw(g, z)(f)
+    assert(p.test())
+  }
+
+  "test foldRightViaParFoldMap" should "succeed" in {
+    val f = (x: Int, y: String) => x + y
+    val p = Fold.foldRightViaParFoldMapLaw(g, z)(f)
+    assert(p.test())
+  }
 }

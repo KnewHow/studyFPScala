@@ -70,6 +70,12 @@ object NoBlockPar {
   def map[A, B](p: Par[A])(f: A => B): Par[B] =
     map2(p, unit(()))((a, _) => f(a))
 
+  def flatMap[A, B](p: Par[A])(f: A => Par[B]): Par[B] =
+    (es: ExecutorService) =>
+      new Future[B] {
+        def apply(cb: B => Unit): Unit = p(es)(a => f(a)(es)(cb))
+    }
+
   def sequence[A](ls: List[Par[A]]): Par[List[A]] =
     ls.foldRight[Par[List[A]]](unit(List()))((a, b) => map2(a, b)(_ :: _))
 
@@ -88,6 +94,14 @@ object NoBlockPar {
       asyncF(r => if (f(r)) List(r) else List())
     }
     map(sequence(fbs))(_.flatten)
+  }
+
+  implicit def asParOps[A](p: Par[A]): ParOps[A] = ParOps(p)
+  case class ParOps[A](p: Par[A]) {
+    def flatMap[B](f: A => Par[B]): Par[B] = NoBlockPar.flatMap(p)(f)
+
+    def map[B](f: A => B): Par[B] = NoBlockPar.map(p)(f)
+    def run(es: ExecutorService)  = NoBlockPar.run(es)(p)
   }
 
 }
