@@ -9,12 +9,6 @@ import fpscala.parallelism.NoBlockPar._
 trait Monoid[A] {
   def op(a: A, b: A): A
   def zero: A
-  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
-    new Monoid[(A, B)] {
-      def zero = A.zero -> B.zero
-      def op(x: (A, B), y: (A, B)): (A, B) =
-        A.op(x._1, y._1) -> B.op(x._2, y._2)
-    }
   def law(gen: Gen[A]): Prop = {
     Prop.forAll(
       for {
@@ -227,4 +221,11 @@ object Monoid {
     def op(a: A, b: A): A = m.op(b, a)
     def zero              = m.zero
   }
+
+  def product[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] =
+    new Monoid[(A, B)] {
+      def zero = A.zero -> B.zero
+      def op(x: (A, B), y: (A, B)): (A, B) =
+        A.op(x._1, y._1) -> B.op(x._2, y._2)
+    }
 }
