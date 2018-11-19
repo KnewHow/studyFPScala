@@ -2,6 +2,7 @@ package test.fpscala.state
 
 import org.scalatest._
 import fpscala.state._
+import fpscala.basic.Logger.Logger
 
 class StateSpec extends FlatSpec {
   val rng = RNGViaState(42)
@@ -9,7 +10,6 @@ class StateSpec extends FlatSpec {
     val s1 = rng.nextInt
     val r1 = s1.run(rng)
     val r2 = s1.run(r1._2)
-    println(s"nextInt function r1 -> $r1 and r2 -> ${r2}")
     assert(true)
   }
 
@@ -29,14 +29,16 @@ class StateSpec extends FlatSpec {
 
   "test nonEvents function" should "success" in {
     val events = rng.nonEvents(10)
-    val r      = events.run(rng)._1.forall(i => i % 2 == 0)
+    val r = events.run(rng)._1.forall { i =>
+      Logger.info(s"i-> $i")
+      i % 2 == 0
+    }
     assert(r)
   }
 
   "test state get function" should "success" in {
     val s = rng.nonEvents(10)
     val r = State.get
-    println(s"get function -> ${r}")
     assert(true)
   }
 }
