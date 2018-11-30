@@ -18,6 +18,9 @@ trait Applicative[F[_]] {
   def apply[A, B](fab: F[A => B])(fa: F[A]): F[B] =
     map2(fab, fa)((a, b) => a(b))
 
+  def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] =
+    apply(apply(apply(unit(f.curried))(fa))(fb))(fc)
+
 }
 
 object Applicative {
