@@ -21,6 +21,44 @@ trait Applicative[F[_]] {
   def map3[A, B, C, D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B, C) => D): F[D] =
     apply(apply(apply(unit(f.curried))(fa))(fb))(fc)
 
+  def sequenceMap[K, V](ofa: Map[K, F[V]]): F[Map[K, V]] =
+    ofa.foldLeft[F[Map[K, V]]](unit(Map.empty)) {
+      case (acc, (k, fv)) => {
+        map2(fv, acc)((a, b) => {
+          b + (k -> a)
+        })
+      }
+    }
+
+  def product[G[_]](
+    G: Applicative[G]): Applicative[({ type f[x] = (F[x], G[x]) })#f] = {
+    val self = this
+    new Applicative[({ type f[x] = (F[x], G[x]) })#f] {
+      def unit[A](a: => A) = (self.unit(a), G.unit(a))
+      override def apply[A, B](f: (F[A => B], G[A => B]))(
+        p: (F[A], G[A])): (F[B], G[B]) = (
+        self.apply(f._1)(p._1) -> G.apply(f._2)(p._2)
+      )
+      override def map2[A, B, C](a: (F[A], G[A]), b: (F[B], G[B]))(
+        f: (A, B) => C): (F[C], G[C]) = {
+        apply(apply(unit(f.curried))(a))(b)
+      }
+    }
+  }
+
+  def compose[G[_]](
+    G: Applicative[G]): Applicative[({ type f[x] = F[G[x]] })#f] = {
+    val self = this
+    new Applicative[({ type f[x] = F[G[x]] })#f] {
+      def unit[A](a: => A) = self.unit(G.unit(a))
+      override def map2[A, B, C](a: F[G[A]], b: F[G[B]])(
+        f: (A, B) => C): F[G[C]] = {
+        self.map2(a, b) { (ga, gb) =>
+          G.map2(ga, gb)(f(_, _))
+        }
+      }
+    }
+  }
 }
 
 object Applicative {
@@ -28,6 +66,5 @@ object Applicative {
     def unit[A](a: => A): Stream[A] = Stream.continually(a)
     def map2[A, B, C](fa: Stream[A], fb: Stream[B])(f: (A, B) => C): Stream[C] =
       fa zip fb map (f.tupled)
-
   }
 }

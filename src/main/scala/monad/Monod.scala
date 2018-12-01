@@ -57,6 +57,17 @@ trait Monad[F[_]] {
       map2(r1(a), r2(a))(_ == _)
     }
 
+  // def compose[G[_]](G: Monad[G]): Monad[({ type f[x] = F[G[x]] })#f] = {
+  //   val self = this
+  //   new Monad[({ type f[x] = F[G[x]] })#f] {
+  //     def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+  //     override def flatMap[A,B](a:F[G[A]])(f: A => F[G[B]]) = {
+
+  //     }
+  //   }
+
+  // }
+
 }
 
 object Monad {
