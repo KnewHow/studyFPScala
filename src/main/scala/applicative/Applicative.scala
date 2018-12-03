@@ -1,6 +1,7 @@
 package fpscala.applicative
+import fpscala.monad.Functor
 
-trait Applicative[F[_]] {
+trait Applicative[F[_]] extends Functor[F] {
   def unit[A](a: => A): F[A]
   def map2[A, B, C](a: F[A], b: F[B])(f: (A, B) => C): F[C]
 
