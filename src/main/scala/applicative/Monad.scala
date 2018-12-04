@@ -1,5 +1,7 @@
 package fpscala.applicative
 
+import fpscala.state.State
+
 trait Monad[F[_]] extends Applicative[F] {
   def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
 
@@ -13,4 +15,12 @@ trait Monad[F[_]] extends Applicative[F] {
 
   def compose[A, B, C](g: A => F[B], h: B => F[C]): A => F[C] =
     a => flatMap(g(a))(h)
+}
+
+object Monad {
+  def stateMonad[S] = new Monad[({ type f[x] = State[S, x] })#f] {
+    def unit[A](a: => A) = State.unit(a)
+    override def flatMap[A, B](fa: State[S, A])(
+      f: A => State[S, B]): State[S, B] = fa.flatMap(f)
+  }
 }
