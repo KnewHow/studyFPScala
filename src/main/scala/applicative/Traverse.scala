@@ -50,12 +50,46 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] {
   def zipWithIndex[A](fa: F[A]): F[(A, Int)] =
     mapAccm(fa, 0)((a, i) => ((a, i + 1), i + 1))._1
 
+  def zip[A, B](fa: F[A], fb: F[B]): F[(A, B)] =
+    mapAccm(fa, toList(fb)) {
+      case (a, Nil)    => sys.error("zip: Incompatiable shape")
+      case (a, h :: t) => ((a, h), t)
+    }._1
+
+  def zipL[A, B](fa: F[A], fb: F[B]): F[(A, Option[B])] =
+    mapAccm(fa, toList(fb)) {
+      case (a, Nil)    => ((a, None), Nil)
+      case (a, h :: t) => ((a, Some(h)), t)
+    }._1
+
+  def zipR[A, B](fa: F[A], fb: F[B]): F[(Option[A], B)] =
+    mapAccm(fb, toList(fa)) {
+      case (b, Nil)    => ((None, b), Nil)
+      case (b, h :: t) => ((Some(h), b), t)
+    }._1
+
   override def toList[A](fa: F[A]): List[A] =
     mapAccm(fa, Nil: List[A])((a, as) => (a, a :: as))._2
 
   def reverse[A](fa: F[A]): F[A] =
     mapAccm(fa, toList(fa).reverse)((_, as) => (as.head, as.tail))._1
 
+  def fuse[G[_], H[_], A, B](fa: F[A])(f: A => G[B], g: A => H[B])(
+    implicit G: Applicative[G],
+    H: Applicative[H]): (G[F[B]], H[F[B]]) =
+    traverse[({ type f[x] = (G[x], H[x]) })#f, A, B](fa)(a => (f(a), g(a)))(
+      G product H)
+
+  def compose[G[_]](
+    implicit G: Traverse[G]): Traverse[({ type f[x] = F[G[x]] })#f] = {
+    val self = this
+    new Traverse[({ type f[x] = F[G[x]] })#f] {
+      override def traverse[H[_]: Applicative, A, B](fga: F[G[A]])(
+        f: A => H[B]): H[F[G[B]]] = self.traverse(fga) { ga =>
+        G.traverse(ga)(f)
+      }
+    }
+  }
 }
 
 object Traverse {

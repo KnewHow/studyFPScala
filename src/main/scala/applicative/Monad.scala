@@ -23,4 +23,16 @@ object Monad {
     override def flatMap[A, B](fa: State[S, A])(
       f: A => State[S, B]): State[S, B] = fa.flatMap(f)
   }
+
+  def composeM[F[_], G[_]](
+    implicit F: Monad[F],
+    G: Monad[G],
+    T: Traverse[G]): Monad[({ type f[x] = F[G[x]] })#f] =
+    new Monad[({ type f[x] = F[G[x]] })#f] {
+      def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
+      def flatMap[A, B](fa: F[G[A]])(f: A => F[G[B]]): F[G[B]] = F.flatMap(fa) {
+        ga =>
+          F.map(T.traverse(ga)(f))(G.join(_))
+      }
+    }
 }
