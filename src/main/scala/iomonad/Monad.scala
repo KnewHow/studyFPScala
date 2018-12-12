@@ -1,9 +1,11 @@
-package fpscala.monad
+package fpscala.iomonad
 
+import fpscala.monad.Id
 import fpscala.testing.Gen
 import java.util.concurrent.ExecutorService
 import fpscala.parallelism.NoBlockPar
 import fpscala.state.State
+
 trait Monad[F[_]] { self =>
   def unit[A](a: => A): F[A]
   def compose[A, B, C](g: A => F[B], h: B => F[C]): A => F[C] =

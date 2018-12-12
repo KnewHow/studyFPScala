@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   "org.typelevel"      %% "cats"        % "0.9.0",
   "org.slf4j"          % "slf4j-api"    % "1.7.5",
   "org.slf4j"          % "slf4j-simple" % "1.7.5",
-  "joda-time"          % "joda-time"    % "2.10.1",
+  "joda-time"          % "joda-time"    % "2.9.2",
   "com.github.knewhow" %% "scalaprop"   % "1.0"
 )
 scalafmtVersion in ThisBuild := "1.1.0"
