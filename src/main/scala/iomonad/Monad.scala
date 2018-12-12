@@ -8,13 +8,16 @@ import fpscala.state.State
 
 trait Monad[F[_]] { self =>
   def unit[A](a: => A): F[A]
+
+  def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
+
   def compose[A, B, C](g: A => F[B], h: B => F[C]): A => F[C] =
     a => flatMap(g(a))(h)
-  def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B]
   def _flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] =
     compose((_: Unit) => fa, f)(())
-
   def map[A, B](fa: F[A])(f: A => B) = flatMap(fa)(a => unit(f(a)))
+  def as[A, B](fa: F[A])(b: B): F[B] = fa map (_ => b)
+  def skip[A](fa: F[A]): F[Unit]     = fa as (Unit)
   def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C) = flatMap(fa) { a =>
     map(fb) { b =>
       f(a, b)
@@ -78,11 +81,19 @@ trait Monad[F[_]] { self =>
     case _       => unit(z)
   }
 
+  def foldM_[A, B](s: Stream[A])(z: B)(f: (B, A) => F[B]): F[Unit] =
+    foldM(s)(z)(f) skip
+
+  def foreachM[A, B](s: Stream[A])(f: A => F[Unit]): F[Unit] =
+    foldM_(s)(Unit)((_, a) => skip(f(a)))
+
   // a implict operator of F[A], make code more elegant
   implicit def FtoFOps[A](fa: F[A]): FOps[A] = FOps(fa)
   case class FOps[A](fa: F[A]) {
     def map[B](f: A => B)        = self.map(fa)(f)
     def flatMap[B](f: A => F[B]) = self.flatMap(fa)(f)
+    def as[B](b: B): F[B]        = self.map(fa)(_ => b)
+    def skip                     = self.skip(fa)
   }
 
 }
