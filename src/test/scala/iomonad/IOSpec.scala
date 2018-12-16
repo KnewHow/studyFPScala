@@ -8,4 +8,9 @@ class IOSpec extends FlatSpec {
     // IO.converter.run
     succeed
   }
+
+  "test factorocal" should "succeed" in {
+    // IO.factorialREPL.run
+    succeed
+  }
 }
