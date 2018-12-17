@@ -1,6 +1,6 @@
 package test.fpscala.iomonad
 
-import fpscala.iomonad.IO
+import fpscala.iomonad.io.IO
 import org.scalatest.FlatSpec
 
 class IOSpec extends FlatSpec {
@@ -11,6 +11,11 @@ class IOSpec extends FlatSpec {
 
   "test factorocal" should "succeed" in {
     // IO.factorialREPL.run
+    succeed
+  }
+
+  "test forever" should "prouduce stackOverFlowError" in {
+    // IO.forever { IO.PrintLine("lala") }.run
     succeed
   }
 }
