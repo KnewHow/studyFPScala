@@ -36,6 +36,14 @@ object Free {
 
   type ~>[F[_], G[_]] = Translate[F, G]
 
+  def translate[F[_], G[_], A](f: Free[F, A])(fg: F ~> G): Free[G, A] = {
+    type FreeG[A] = Free[G, A]
+    val t = new (F ~> FreeG) {
+      def apply[A](fa: F[A]): Free[G, A] = Suspend { fg(fa) }
+    }
+    run(f)(t)(freeMonad[G])
+  }
+
   def freeMonad[F[_]]: Monad[({ type f[x] = Free[F, x] })#f] =
     new Monad[({ type f[x] = Free[F, x] })#f] {
       def unit[A](a: => A): Free[F, A]                      = Return(a)

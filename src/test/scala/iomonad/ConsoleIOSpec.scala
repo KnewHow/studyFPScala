@@ -25,8 +25,8 @@ class ConsoleIOSpec extends FlatSpec {
   }
 
   "test consoleThunkIO" should "StackOverflow" in {
-    // val p = Console.runConsoleThunk(
-    //   Free.FreeMonad.forever(Console.printlnIO("still going")))
+    // val p = Console.runConsole(
+    // Free.FreeMonad.forever(Console.printlnIO("still going")))
     // val r = p()
     succeed
   }

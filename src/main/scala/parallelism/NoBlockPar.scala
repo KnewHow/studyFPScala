@@ -31,6 +31,12 @@ object NoBlockPar {
         def apply(cb: A => Unit): Unit = eval(es)(a(es)(cb))
     }
 
+  def async[A](run: (A => Unit) => Unit): Par[A] =
+    es =>
+      new Future[A] {
+        def apply(cb: A => Unit): Unit = run(cb)
+    }
+
   def eval(es: ExecutorService)(r: => Unit): Unit =
     es.submit(new Callable[Unit] { def call = r })
 

@@ -62,4 +62,14 @@ object Console {
   def runConsolePar[A](cIO: ConsoleIO[A]): Par[A] = Free.run(cIO)(ConsoleToPar)
   def runConsoleThunk[A](cIO: ConsoleIO[A]): Function0[A] =
     Free.run(cIO)(ConsoleToThunk)
+
+  def runConsole[A](cIO: ConsoleIO[A]): A = {
+    Free.runTrampoline {
+      Free.translate(cIO) {
+        new (Console ~> Function0) {
+          def apply[A](c: Console[A]) = c.toThunk
+        }
+      }
+    }
+  }
 }
