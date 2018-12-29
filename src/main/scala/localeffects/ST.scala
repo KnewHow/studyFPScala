@@ -1,6 +1,7 @@
 package fpscala.localeffects
 
 import scala.reflect.Manifest
+import fpscala.basic.Logger.Logger
 
 sealed trait ST[S, A] { self =>
   protected def run(s: S): (A, S)
@@ -55,8 +56,8 @@ trait RunnableST[A] {
 }
 
 sealed abstract class STArray[S, A](implicit manifect: Manifest[A]) {
-  protected def value: Array[A]
-  def size                   = ST(value.size)
+  protected val value: Array[A]
+  def size: ST[S, Int]       = ST(value.size)
   def read(i: Int): ST[S, A] = ST(value(i))
   def write(i: Int, a: A): ST[S, Unit] = new ST[S, Unit] {
     def run(s: S): (Unit, S) = {
@@ -80,7 +81,7 @@ sealed abstract class STArray[S, A](implicit manifect: Manifest[A]) {
       v1 <- read(i)
       v2 <- read(j)
       _  <- write(i, v2)
-      _  <- write(j, v2)
+      _  <- write(j, v1)
     } yield ()
 
   def noop[S] = ST[S, Unit](())
@@ -91,9 +92,10 @@ sealed abstract class STArray[S, A](implicit manifect: Manifest[A]) {
     end: Int,
     pivot: Int): ST[S, Int] =
     for {
-      pv <- a.read(pivot)
-      _  <- swap(end, pivot)
-      j  <- STRef(begin)
+      pv   <- a.read(pivot)
+      _    <- swap(end, pivot)
+      arr2 <- a.freeze
+      j    <- STRef(begin)
       _ <- (begin until end).foldLeft(noop[S]) { (s, i) =>
         for {
           _  <- s
@@ -122,11 +124,29 @@ sealed abstract class STArray[S, A](implicit manifect: Manifest[A]) {
 object STArray {
   def apply[S, A: Manifest](sz: Int, a: A): ST[S, STArray[S, A]] =
     ST(new STArray[S, A] {
-      def value = Array.fill(sz)(a)
+      val value = Array.fill(sz)(a)
     })
 
   def apply[S, A: Manifest](a: Array[A]): ST[S, STArray[S, A]] =
     ST(new STArray[S, A] {
-      def value = a
+      val value = a
     })
+
+  def fromList[S, A: Manifest](xs: List[A]): ST[S, STArray[S, A]] =
+    ST(new STArray[S, A] {
+      lazy val value = xs.toArray
+    })
+
+  def quickSort(xs: List[Int]): List[Int] =
+    if (xs.isEmpty) xs
+    else
+      ST.run(new RunnableST[List[Int]] {
+        def apply[S] =
+          for {
+            arr    <- fromList(xs)
+            size   <- arr.size
+            _      <- arr.qs(arr, 0, size - 1)
+            sorted <- arr.freeze
+          } yield sorted
+      })
 }
