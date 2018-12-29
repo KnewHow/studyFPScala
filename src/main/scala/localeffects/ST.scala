@@ -25,6 +25,8 @@ object ST {
     }
   }
   def run[A](r: RunnableST[A]): A = r.apply[Unit].run(())._1
+
+  def test = ST(1).run(())
 }
 
 sealed trait STRef[S, A] {

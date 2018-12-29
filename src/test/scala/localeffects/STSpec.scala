@@ -21,4 +21,8 @@ class STSpec extends FlatSpec {
     val (a, b) = ST.run(p)
     assert(a == 3 && b == 2)
   }
+
+  "test run ST" should "success" in {
+    // ST(1).run(())
+  }
 }
