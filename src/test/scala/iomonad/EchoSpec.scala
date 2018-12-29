@@ -1,6 +1,6 @@
 package test.fpscala.iomonad
 
-import fpscala.iomonad.IO
+import fpscala.iomonad.io.IO
 import scala.io.StdIn
 import org.scalatest.FlatSpec
 
