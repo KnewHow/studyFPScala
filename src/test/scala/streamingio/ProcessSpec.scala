@@ -32,4 +32,10 @@ class ProcessSpec extends FlatSpec {
     val r   = sum(Stream(1, 2, 3)).toList
     assert(r == List(1.0, 3.0, 6.0))
   }
+
+  "test count" should "succeed" in {
+    val r = Process.count(Stream("aa", "bb", "ccc")).toList
+    assert(r == List(1, 2, 3))
+
+  }
 }
